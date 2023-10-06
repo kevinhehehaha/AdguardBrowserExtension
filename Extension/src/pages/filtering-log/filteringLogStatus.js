@@ -64,10 +64,10 @@ export const getStatusMode = (event) => {
          * {@link FilteringLogApi.createCosmeticRuleEventData}.
          */
         const {
-            allowlistRule, cssRule, scriptRule, cookieRule, cspRule,
+            allowlistRule, allowlistStealthRule, cssRule, scriptRule, cookieRule, cspRule,
         } = requestRule;
 
-        if (allowlistRule) {
+        if (allowlistRule || allowlistStealthRule) {
             mode = StatusMode.ALLOWED;
         } else if (cssRule || scriptRule || removeParam || removeHeader) {
             mode = StatusMode.MODIFIED;

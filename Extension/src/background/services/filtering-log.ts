@@ -33,6 +33,7 @@ import {
     JsInjectEvent,
     ReplaceRuleApplyEvent,
     StealthActionEvent,
+    StealthAllowlistActionEvent,
     CspReportBlockedEvent,
 } from '@adguard/tswebextension';
 
@@ -124,6 +125,10 @@ export class FilteringLogService {
         defaultFilteringLog.addEventListener(FilteringEventType.JsInject, FilteringLogService.onScriptInjection);
 
         defaultFilteringLog.addEventListener(FilteringEventType.StealthAction, FilteringLogService.onStealthAction);
+        defaultFilteringLog.addEventListener(
+            FilteringEventType.StealthAllowlistAction,
+            FilteringLogService.onStealthAllowlistAction,
+        );
 
         defaultFilteringLog.addEventListener(
             FilteringEventType.CspReportBlocked,
@@ -351,8 +356,8 @@ export class FilteringLogService {
     /**
      * Records the application of an action from Stealth Mode.
      *
-     * @param event Event with type {@link ReplaceRuleApplyEvent}.
-     * @param event.data Destructed data from {@link ReplaceRuleApplyEvent}:
+     * @param event Event with type {@link StealthActionEvent}.
+     * @param event.data Destructed data from {@link StealthActionEvent}:
      * tab id, event id and stealthActions - last one is the bit-mask
      * of applied {@link StealthActions} from tswebextension.
      */
@@ -360,6 +365,26 @@ export class FilteringLogService {
         const { tabId, eventId, stealthActions } = data;
 
         filteringLogApi.updateEventData(tabId, eventId, { stealthActions });
+    }
+
+    /**
+     * Records prevention of an action from Stealth Mode.
+     *
+     * @param event Event with type {@link StealthAllowlistActionEvent}.
+     * @param event.data Destructed data from {@link StealthAllowlistActionEvent}:
+     * tab id, event id and allowlisting stealth network rule which
+     * cancel application of {@link StealthActions} from tswebextension.
+     */
+    private static onStealthAllowlistAction({ data }: StealthAllowlistActionEvent): void {
+        const { tabId, rule, eventId } = data;
+
+        filteringLogApi.updateEventData(tabId, eventId, {
+            requestRule: FilteringLogApi.createNetworkRuleEventData(rule),
+        });
+
+        if (!SettingsApi.getSetting(SettingOption.DisableCollectHits)) {
+            HitStatsApi.addRuleHit(rule.getText(), rule.getFilterListId());
+        }
     }
 
     /**
