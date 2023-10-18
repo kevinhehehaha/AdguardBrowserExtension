@@ -7,12 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Send `system_version` during issues reporting
+  (#2535)[https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2535].
+
+### Changed
+- Updated `@adguard/filters-downloader` to [v1.1.20](https://github.com/AdguardTeam/FiltersDownloader/blob/master/CHANGELOG.md).
+- Updated `@adguard/tswebextension` to [v0.4.1](https://github.com/AdguardTeam/tsurlfilter/blob/master/packages/tswebextension/CHANGELOG.md).
+- Updated `@adguard/tsurlfilter` to [v2.2.1](https://github.com/AdguardTeam/tsurlfilter/blob/master/packages/tsurlfilter/CHANGELOG.md).
+- Updated `@adguard/scriptlets` to [v1.9.72](https://github.com/AdguardTeam/Scriptlets/blob/master/CHANGELOG.md)
+- Removed gutter of tab buttons on extension's settings page [#2198](https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2198).
+
 ### Fixed
-- AdGuard v4.2.168 is not working in the Firefox after update [#2501](https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2501)
+- Rule patterns and options not being clickable in rule wizard of filtering log [#2204](https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2204).
 
 
 <!-- TODO: update the date after release -->
-## [4.2.187] - 2023-10-xx
+## [4.2.189] - 2023-10-09
 
 ### Added
 - Fixed stealth mode toggle not triggering configuration reload.
@@ -21,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Update `@adguard/tswebextension` to [v0.3.21](https://github.com/AdguardTeam/tsurlfilter/blob/master/packages/tswebextension/CHANGELOG.md#0321---2023-09-25).
-- Update `@adguard/tsurlfilter` to [v2.1.12](https://github.com/AdguardTeam/tsurlfilter/blob/master/packages/tsurlfilter/CHANGELOG.md#2112---2023-09-25)
+- Update `@adguard/tsurlfilter` to [v2.1.12](https://github.com/AdguardTeam/tsurlfilter/blob/master/packages/tsurlfilter/CHANGELOG.md#2112---2023-09-25).
 
 ### Fixed
 - Slow enabling of recommended filters on first group activation
@@ -44,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#2487](https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2487).
 - Csp rules breaking rule wizard on unblocking
   [#2448](https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2448).
+- AdGuard v4.2.168 is not working in the Firefox after update
+  [#2501](https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2501).
 
 
 ## [4.2.168] - 2023-09-07
@@ -84,7 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `@adguard/tsurlfilter` to [v2.1.7](https://github.com/AdguardTeam/tsurlfilter/blob/master/packages/tsurlfilter/CHANGELOG.md#217---2023-08-10)
 - Updated `@adguard/scriptlets` to [v1.9.62](https://github.com/AdguardTeam/Scriptlets/blob/master/CHANGELOG.md)
 
-[4.2.187]: https://github.com/AdguardTeam/AdguardBrowserExtension/compare/v4.2.168...4.2.187
+[4.2.189]: https://github.com/AdguardTeam/AdguardBrowserExtension/compare/v4.2.168...4.2.189
 [4.2.168]: https://github.com/AdguardTeam/AdguardBrowserExtension/compare/v4.2.162...v4.2.168
 [4.2.162]: https://github.com/AdguardTeam/AdguardBrowserExtension/compare/v4.2.151...v4.2.162
 [4.2.151]: https://github.com/AdguardTeam/AdguardBrowserExtension/compare/v4.1.57...v4.2.151
