@@ -376,14 +376,16 @@ export class FilteringLogService {
      * cancel application of {@link StealthActions} from tswebextension.
      */
     private static onStealthAllowlistAction({ data }: StealthAllowlistActionEvent): void {
-        const { tabId, rule, eventId } = data;
+        const { tabId, rules, eventId } = data;
 
         filteringLogApi.updateEventData(tabId, eventId, {
-            requestRule: FilteringLogApi.createNetworkRuleEventData(rule),
+            stealthAllowlistRules: rules.map(rule => FilteringLogApi.createNetworkRuleEventData(rule)),
         });
 
         if (!SettingsApi.getSetting(SettingOption.DisableCollectHits)) {
-            HitStatsApi.addRuleHit(rule.getText(), rule.getFilterListId());
+            rules.forEach(rule => {
+                HitStatsApi.addRuleHit(rule.getText(), rule.getFilterListId());
+            });
         }
     }
 

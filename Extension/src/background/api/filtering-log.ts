@@ -78,6 +78,7 @@ export type FilteringLogEvent = {
     isModifyingCookieRule?: boolean,
     cspReportBlocked?: boolean,
     replaceRules?: FilteringEventRuleData[],
+    stealthAllowlistRules?: FilteringEventRuleData[],
     stealthActions?: StealthActionEvent['data']['stealthActions'],
 };
 
@@ -429,7 +430,6 @@ export class FilteringLogApi {
         }
 
         data.allowlistRule = rule.isAllowlist();
-        data.allowlistStealthRule = rule.isOptionEnabled(NetworkRuleOption.Stealth);
         data.cspRule = rule.isOptionEnabled(NetworkRuleOption.Csp);
         data.cookieRule = rule.isOptionEnabled(NetworkRuleOption.Cookie);
 

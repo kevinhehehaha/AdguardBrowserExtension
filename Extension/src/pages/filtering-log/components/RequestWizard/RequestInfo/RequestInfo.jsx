@@ -123,6 +123,11 @@ const getRule = (selectedEvent) => {
         return replaceRules.map((rule) => getRuleText(rule)).join('\n');
     }
 
+    const stealthAllowlistRules = selectedEvent?.stealthAllowlistRules;
+    if (stealthAllowlistRules && stealthAllowlistRules.length > 0) {
+        return stealthAllowlistRules.map((rule) => getRuleText(rule)).join('\n');
+    }
+
     const requestRule = selectedEvent?.requestRule;
     if (
         requestRule?.allowlistRule
@@ -142,7 +147,12 @@ const getRule = (selectedEvent) => {
  */
 const getRuleFieldTitle = (selectedEvent) => {
     const replaceRules = selectedEvent?.replaceRules;
-    if (replaceRules && replaceRules.length > 1) {
+    const stealthAllowlistRules = selectedEvent?.stealthAllowlistRules;
+
+    const areMultipleRules = (replaceRules && replaceRules.length > 1)
+     || (stealthAllowlistRules && stealthAllowlistRules.length > 1);
+
+    if (areMultipleRules) {
         return reactTranslator.getMessage('filtering_modal_rules');
     }
     return reactTranslator.getMessage('filtering_modal_rule');

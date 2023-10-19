@@ -119,6 +119,7 @@ const ruleAccessor = (props) => {
     const {
         requestRule,
         replaceRules,
+        stealthAllowlistRules,
     } = props;
 
     let ruleText = '';
@@ -133,6 +134,12 @@ const ruleAccessor = (props) => {
     if (replaceRules) {
         const rulesCount = replaceRules.length;
         ruleText = `${reactTranslator.getMessage('filtering_log_modified_rules')} ${rulesCount}`;
+    }
+
+    if (stealthAllowlistRules && stealthAllowlistRules.length > 0) {
+        // Only first $stealth allowlist rule is being shown
+        // to conform with desktop applications
+        ruleText = stealthAllowlistRules[0].ruleText;
     }
 
     return ruleText;

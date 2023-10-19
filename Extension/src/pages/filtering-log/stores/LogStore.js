@@ -258,7 +258,7 @@ class LogStore {
     }
 
     formatEvent = (filteringEvent) => {
-        const { requestRule } = filteringEvent;
+        const { requestRule, stealthAllowlistRules } = filteringEvent;
 
         const ruleText = requestRule?.ruleText;
 
@@ -266,7 +266,7 @@ class LogStore {
             filteringEvent.ruleText = ruleText;
         }
 
-        const filterId = requestRule?.filterId;
+        const filterId = requestRule?.filterId || stealthAllowlistRules?.[0]?.filterId;
 
         if (filterId !== undefined) {
             filteringEvent.filterName = getFilterName(filterId, this.filtersMetadata);
