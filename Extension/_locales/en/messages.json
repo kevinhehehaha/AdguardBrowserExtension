@@ -125,6 +125,9 @@
     "filtering_log_modified_rules": {
         "message": "Modified rules:"
     },
+    "filtering_log_stealth_rules": {
+        "message": "Stealth rules:"
+    },
     "filtering_log_privacy_applied_rules": {
         "message": "Stealth Mode applied"
     },

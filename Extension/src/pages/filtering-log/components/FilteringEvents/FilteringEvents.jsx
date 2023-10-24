@@ -141,8 +141,8 @@ const ruleAccessor = (props) => {
         if (rulesCount === 1) {
             return stealthAllowlistRules[0].ruleText;
         }
-        // FIXME use i18n here
-        ruleText = `Stealth rules: ${rulesCount}`;
+
+        ruleText = `${reactTranslator.getMessage('filtering_log_stealth_rules')} ${rulesCount}`;
     }
 
     return ruleText;
