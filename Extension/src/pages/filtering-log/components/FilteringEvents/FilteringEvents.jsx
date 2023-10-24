@@ -137,9 +137,12 @@ const ruleAccessor = (props) => {
     }
 
     if (stealthAllowlistRules && stealthAllowlistRules.length > 0) {
-        // Only first $stealth allowlist rule is being shown
-        // to conform with desktop applications
-        ruleText = stealthAllowlistRules[0].ruleText;
+        const rulesCount = stealthAllowlistRules.length;
+        if (rulesCount === 1) {
+            return stealthAllowlistRules[0].ruleText;
+        }
+        // FIXME use i18n here
+        ruleText = `Stealth rules: ${rulesCount}`;
     }
 
     return ruleText;

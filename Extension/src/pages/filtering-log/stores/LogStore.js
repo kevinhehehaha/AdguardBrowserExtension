@@ -266,9 +266,14 @@ class LogStore {
             filteringEvent.ruleText = ruleText;
         }
 
-        const filterId = requestRule?.filterId || stealthAllowlistRules?.[0]?.filterId;
+        let filterId = requestRule?.filterId;
 
-        if (filterId !== undefined) {
+        // FIXME also handle replace rules
+        if (typeof filterId !== 'number' && stealthAllowlistRules && stealthAllowlistRules.length === 1) {
+            filterId = stealthAllowlistRules[0]?.filterId;
+        }
+
+        if (typeof filterId === 'number') {
             filteringEvent.filterName = getFilterName(filterId, this.filtersMetadata);
         }
 

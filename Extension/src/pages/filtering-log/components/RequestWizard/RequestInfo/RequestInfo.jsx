@@ -117,15 +117,23 @@ const getRuleText = (rule) => {
  * @param selectedEvent
  * @returns {string|null}
  */
-const getRule = (selectedEvent) => {
+const getRule = (selectedEvent, filtersMetadata) => {
     const replaceRules = selectedEvent?.replaceRules;
     if (replaceRules && replaceRules.length > 0) {
-        return replaceRules.map((rule) => getRuleText(rule)).join('\n');
+        return replaceRules.map((rule) => getRuleText(rule)).join('\n'); // FIXME add filter names for replace rules too
     }
 
     const stealthAllowlistRules = selectedEvent?.stealthAllowlistRules;
     if (stealthAllowlistRules && stealthAllowlistRules.length > 0) {
-        return stealthAllowlistRules.map((rule) => getRuleText(rule)).join('\n');
+        return stealthAllowlistRules
+            .map((rule) => {
+                const filterId = rule?.filterId;
+                if (typeof filterId !== 'undefined') {
+                    return `${getRuleText(rule)} (${getFilterName(filterId, filtersMetadata)})`;
+                }
+                return `${getRuleText(rule)}`;
+            })
+            .join('\n');
     }
 
     const requestRule = selectedEvent?.requestRule;
@@ -214,7 +222,7 @@ const RequestInfo = observer(() => {
         },
         [PARTS.RULE]: {
             title: getRuleFieldTitle(selectedEvent),
-            data: getRule(selectedEvent),
+            data: getRule(selectedEvent, filtersMetadata),
         },
         // TODO add converted rule text
         [PARTS.FILTER]: {
