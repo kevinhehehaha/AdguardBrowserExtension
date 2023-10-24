@@ -726,7 +726,7 @@
         "message": "Usar filtros optimizados"
     },
     "options_use_optimized_filters_desc": {
-        "message": "Utiliza versiones más cortas de los filtros con sólo las reglas más populares para ahorrar tráfico. Mejor adaptado a los navegadores móviles"
+        "message": "Utiliza versiones más cortas de los filtros con solo las reglas más populares para ahorrar tráfico. Más adecuado para navegadores móviles."
     },
     "options_privacy_title": {
         "message": "Modo sigiloso"
@@ -747,10 +747,10 @@
         "message": "Oculta las consultas de los sitios web visitados desde un motor de búsqueda."
     },
     "options_send_not_track_title": {
-        "message": "Pide a los sitios web que no te rastreen"
+        "message": "Pedir a los sitios web que no te rastreen"
     },
     "options_send_not_track_desc": {
-        "message": "Enviar las señales \"<gpc>Control de privacidad global<\/gpc>\" y \"<dnt>No rastrear<\/dnt>\" a los sitios web que visita."
+        "message": "Envia las señales \"<gpc>Control de privacidad global<\/gpc>\" y \"<dnt>No rastrear<\/dnt>\" a los sitios web que estás visitando."
     },
     "options_stripped_tracking_parameters": {
         "message": "Parámetros de rastreo eliminados"
