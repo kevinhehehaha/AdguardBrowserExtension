@@ -258,7 +258,11 @@ class LogStore {
     }
 
     formatEvent = (filteringEvent) => {
-        const { requestRule, stealthAllowlistRules } = filteringEvent;
+        const {
+            requestRule,
+            replaceRules,
+            stealthAllowlistRules,
+        } = filteringEvent;
 
         const ruleText = requestRule?.ruleText;
 
@@ -268,13 +272,14 @@ class LogStore {
 
         let filterId = requestRule?.filterId;
 
-        // FIXME also handle replace rules
-        if (typeof filterId !== 'number' && stealthAllowlistRules && stealthAllowlistRules.length === 1) {
-            filterId = stealthAllowlistRules[0]?.filterId;
-        }
-
+        // For $replace and $stealth rules, which will be grouped in RequestInfo with filter names specified,
+        // we only show filter name on a main log screen for a single rule.
         if (typeof filterId === 'number') {
             filteringEvent.filterName = getFilterName(filterId, this.filtersMetadata);
+        } else if (replaceRules && replaceRules.length === 1) {
+            filterId = replaceRules[0]?.filterId;
+        } else if (stealthAllowlistRules && stealthAllowlistRules.length === 1) {
+            filterId = stealthAllowlistRules[0]?.filterId;
         }
 
         return filteringEvent;

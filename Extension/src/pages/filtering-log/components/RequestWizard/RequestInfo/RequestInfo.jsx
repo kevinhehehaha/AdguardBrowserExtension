@@ -112,28 +112,44 @@ const getRuleText = (rule) => {
 };
 
 /**
- * Returns rule text
+ * Handles generating rule texts for rules, which should be shown as a group,
+ * i.e $replace and $stealth rules
+ *
+ * @param {FilteringEventRuleData[]} rules rules to render in request info tab
+ * @param {RegularFilterMetadata} filtersMetadata filters metadata
+ * @returns {string[]} rulePart for grouped rules
+ */
+const getRulePartsGroup = (rules, filtersMetadata) => {
+    if (rules.length === 1) {
+        // Filter name for a single rule is shown on a filtering event row
+        return `${getRuleText(rules[0])}`;
+    }
+    return rules
+        .map((rule) => {
+            const filterId = rule?.filterId;
+            return typeof filterId === 'number'
+                ? `${getRuleText(rule)} (${getFilterName(filterId, filtersMetadata)})`
+                : `${getRuleText(rule)}`;
+        })
+        .join('\n');
+};
+
+/**
+ * Returns rule item to render, includes rule text and,
+ * when multiple rules are being rendered, source filter name.
  *
  * @param selectedEvent
  * @returns {string|null}
  */
-const getRule = (selectedEvent, filtersMetadata) => {
+const getRulePart = (selectedEvent, filtersMetadata) => {
     const replaceRules = selectedEvent?.replaceRules;
     if (replaceRules && replaceRules.length > 0) {
-        return replaceRules.map((rule) => getRuleText(rule)).join('\n'); // FIXME add filter names for replace rules too
+        return getRulePartsGroup(replaceRules, filtersMetadata);
     }
 
     const stealthAllowlistRules = selectedEvent?.stealthAllowlistRules;
     if (stealthAllowlistRules && stealthAllowlistRules.length > 0) {
-        return stealthAllowlistRules
-            .map((rule) => {
-                const filterId = rule?.filterId;
-                if (typeof filterId !== 'undefined') {
-                    return `${getRuleText(rule)} (${getFilterName(filterId, filtersMetadata)})`;
-                }
-                return `${getRuleText(rule)}`;
-            })
-            .join('\n');
+        return getRulePartsGroup(stealthAllowlistRules, filtersMetadata);
     }
 
     const requestRule = selectedEvent?.requestRule;
@@ -222,7 +238,7 @@ const RequestInfo = observer(() => {
         },
         [PARTS.RULE]: {
             title: getRuleFieldTitle(selectedEvent),
-            data: getRule(selectedEvent, filtersMetadata),
+            data: getRulePart(selectedEvent, filtersMetadata),
         },
         // TODO add converted rule text
         [PARTS.FILTER]: {
