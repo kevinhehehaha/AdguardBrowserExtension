@@ -69,11 +69,13 @@ const filterNameAccessor = (props) => {
  * @property {string} YELLOW
  * @property {string} RED
  * @property {string} GREEN
+ * @property {string} LIGHT_GREEN
  */
 const RowClassName = {
     YELLOW: 'yellow',
     RED: 'red',
     GREEN: 'green',
+    LIGHT_GREEN: 'light-green',
 };
 
 const rowClassNameMap = {
@@ -81,6 +83,7 @@ const rowClassNameMap = {
     [StatusMode.MODIFIED]: RowClassName.YELLOW,
     [StatusMode.BLOCKED]: RowClassName.RED,
     [StatusMode.ALLOWED]: RowClassName.GREEN,
+    [StatusMode.ALLOWED_STEALTH]: RowClassName.LIGHT_GREEN,
 };
 
 const getRowClassName = (event) => {

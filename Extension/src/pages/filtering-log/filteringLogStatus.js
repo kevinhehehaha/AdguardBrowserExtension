@@ -28,6 +28,7 @@ export const StatusMode = {
     MODIFIED: 'modified',
     BLOCKED: 'blocked',
     ALLOWED: 'allowed',
+    ALLOWED_STEALTH: 'allowed-stealth',
 };
 
 /**
@@ -40,6 +41,7 @@ export const getStatusMode = (event) => {
     const {
         cspReportBlocked,
         replaceRules,
+        stealthAllowlistRules,
         requestRule,
         removeParam,
         removeHeader,
@@ -55,6 +57,10 @@ export const getStatusMode = (event) => {
 
     if (replaceRules) {
         mode = StatusMode.MODIFIED;
+    }
+
+    if (stealthAllowlistRules) {
+        mode = StatusMode.ALLOWED_STEALTH;
     }
 
     if (requestRule && !replaceRules) {
