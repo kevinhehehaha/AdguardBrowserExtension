@@ -82,8 +82,8 @@ const rowClassNameMap = {
     [StatusMode.REGULAR]: null,
     [StatusMode.MODIFIED]: RowClassName.YELLOW,
     [StatusMode.BLOCKED]: RowClassName.RED,
-    [StatusMode.ALLOWED]: RowClassName.GREEN,
-    [StatusMode.ALLOWED_STEALTH]: RowClassName.LIGHT_GREEN,
+    [StatusMode.ALLOWED]: RowClassName.LIGHT_GREEN,
+    [StatusMode.ALLOWED_STEALTH]: RowClassName.GREEN,
 };
 
 const getRowClassName = (event) => {
