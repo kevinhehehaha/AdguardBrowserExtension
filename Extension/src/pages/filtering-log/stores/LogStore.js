@@ -270,16 +270,20 @@ class LogStore {
             filteringEvent.ruleText = ruleText;
         }
 
-        let filterId = requestRule?.filterId;
-
         // For $replace and $stealth rules, which will be grouped in RequestInfo with filter names specified,
         // we only show filter name on a main log screen for a single rule.
-        if (typeof filterId === 'number') {
-            filteringEvent.filterName = getFilterName(filterId, this.filtersMetadata);
-        } else if (replaceRules && replaceRules.length === 1) {
-            filterId = replaceRules[0]?.filterId;
-        } else if (stealthAllowlistRules && stealthAllowlistRules.length === 1) {
-            filterId = stealthAllowlistRules[0]?.filterId;
+        if (requestRule) {
+            filteringEvent.filterName = getFilterName(requestRule?.filterId, this.filtersMetadata);
+        }
+
+        const { filterName } = filteringEvent;
+
+        if (!filterName && replaceRules && replaceRules.length === 1) {
+            filteringEvent.filterName = getFilterName(replaceRules[0]?.filterId, this.filtersMetadata);
+        }
+
+        if (!filterName && stealthAllowlistRules && stealthAllowlistRules.length === 1) {
+            filteringEvent.filterName = getFilterName(stealthAllowlistRules[0]?.filterId, this.filtersMetadata);
         }
 
         return filteringEvent;
