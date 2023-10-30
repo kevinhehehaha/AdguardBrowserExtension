@@ -182,6 +182,35 @@ const getRuleFieldTitle = (selectedEvent) => {
     return reactTranslator.getMessage('filtering_modal_rule');
 };
 
+/**
+ * Returns filter name for a rule
+ *
+ * @param selectedEvent filtering event
+ * @param {RegularFilterMetadata} filtersMetadata filters metadata
+ * @returns {string|null} filter name or null, if filter is not found or there are multiple rules
+ */
+const getRuleFilterName = (selectedEvent, filtersMetadata) => {
+    const {
+        requestRule,
+        replaceRules,
+        stealthAllowlistRules,
+    } = selectedEvent;
+
+    if (requestRule) {
+        return getFilterName(requestRule.filterId, filtersMetadata);
+    }
+
+    if (replaceRules && replaceRules.length === 1) {
+        return getFilterName(replaceRules[0]?.filterId, filtersMetadata);
+    }
+
+    if (stealthAllowlistRules && stealthAllowlistRules.length === 1) {
+        return getFilterName(stealthAllowlistRules[0]?.filterId, filtersMetadata);
+    }
+
+    return null;
+};
+
 const PARTS = {
     URL: 'URL',
     ELEMENT: 'ELEMENT',
@@ -243,7 +272,7 @@ const RequestInfo = observer(() => {
         // TODO add converted rule text
         [PARTS.FILTER]: {
             title: reactTranslator.getMessage('filtering_modal_filter'),
-            data: getFilterName(selectedEvent.requestRule?.filterId, filtersMetadata),
+            data: getRuleFilterName(selectedEvent, filtersMetadata),
         },
         [PARTS.STEALTH]: {
             title: reactTranslator.getMessage('filtering_modal_privacy'),
