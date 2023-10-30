@@ -136,7 +136,7 @@ const ruleAccessor = (props) => {
 
     if (replaceRules) {
         const rulesCount = replaceRules.length;
-        ruleText = `${reactTranslator.getMessage('filtering_log_modified_rules')} ${rulesCount}`;
+        ruleText = reactTranslator.getMessage('filtering_log_modified_rules', { rules_count: rulesCount });
     }
 
     if (stealthAllowlistRules && stealthAllowlistRules.length > 0) {
@@ -145,7 +145,7 @@ const ruleAccessor = (props) => {
             return stealthAllowlistRules[0].ruleText;
         }
 
-        ruleText = `${reactTranslator.getMessage('filtering_log_stealth_rules')} ${rulesCount}`;
+        ruleText = reactTranslator.getMessage('filtering_log_stealth_rules', { rules_count: rulesCount });
     }
 
     return ruleText;
