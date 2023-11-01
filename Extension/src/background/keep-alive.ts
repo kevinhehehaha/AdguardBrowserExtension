@@ -21,9 +21,9 @@ import { isHttpRequest } from '@adguard/tswebextension';
 
 import { Log } from '../common/log';
 import { UserAgent } from '../common/user-agent';
-
-const DISCONNECT_TIMEOUT_MS = 1000 * 60 * 4; // 4 minutes
-const PORT_NAME = 'keepAlive';
+import { KEEP_ALIVE_PORT_NAME } from '../common/constants';
+import { messenger } from '../pages/services/messenger';
+import { MessageType } from '../common/messages';
 
 /**
  * Code which is injected into the page as content-script to keep the connection alive.
@@ -36,7 +36,7 @@ const code = `
     }
 
     function connect() {
-        browser.runtime.connect({ name: '${PORT_NAME}' })
+        browser.runtime.connect({ name: '${KEEP_ALIVE_PORT_NAME}' })
             .onDisconnect
             .addListener(() => {
                 connect();
@@ -50,60 +50,77 @@ const code = `
 `;
 
 /**
- * On tab update event handler.
- *
- * @param tabId - Tab id, not used in the code. Required by API.
- * @param info - Tab update info.
- * @param tab - Tab details.
+ * Class used to keep firefox event page alive.
+ * It connects to the port, which handler can be found here {@link ConnectionHandler}
+ * We use it to avoid ads blinking when the event page was terminated.
+ * It will be removed once we implement faster engine initialization.
  */
-const onUpdate = (
-    tabId: number,
-    info: browser.Tabs.OnUpdatedChangeInfoType,
-    tab: browser.Tabs.Tab,
-): void => {
-    if (info.url && isHttpRequest(info.url)) {
-        executeScriptOnTab([tab]);
-    }
-};
+export class KeepAlive {
+    /**
+     * Adds listeners to tabs updates and finds the first tab to inject the script.
+     */
+    static init(): void {
+        if (UserAgent.isFirefox) {
+            /**
+             * When tab updates, we try to inject the content script to it.
+             */
+            browser.tabs.onUpdated.addListener(KeepAlive.onUpdate);
 
-/**
- * Executes a script on one of the open tabs.
- *
- * @param tabs - Tabs to execute a script on or null by default.
- */
-async function executeScriptOnTab(tabs: browser.Tabs.Tab[] | null = null): Promise<void> {
-    if (chrome.runtime.lastError) {
-        // tab was closed before setTimeout ran
-    }
-
-    tabs = tabs || await browser.tabs.query({ url: '*://*/*' });
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const tab of tabs) {
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            await browser.tabs.executeScript(tab.id, { code });
-            browser.tabs.onUpdated.removeListener(onUpdate);
-            return;
-        } catch (e) {
-            Log.error(e);
+            KeepAlive.executeScriptOnTab();
         }
     }
-    browser.tabs.onUpdated.addListener(onUpdate);
-}
 
-/**
- * Main entry point.
- */
-export const keepAlive = (): void => {
-    if (UserAgent.isFirefox) {
-        browser.runtime.onConnect.addListener(port => {
-            if (port.name === PORT_NAME) {
-                setTimeout(() => port.disconnect(), DISCONNECT_TIMEOUT_MS);
-                port.onDisconnect.addListener(() => executeScriptOnTab());
-            }
-        });
-
-        executeScriptOnTab();
+    /**
+     * Called after the background page has reloaded.
+     * It is necessary for event page, which can reload,
+     * but options page subscribes to events only once.
+     * This function notifies all listeners to update by sending an UpdateListeners message.
+     * TODO: can be removed after all pages connected via long living messages.
+     */
+    static async resyncEventSubscriptions(): Promise<void> {
+        try {
+            await messenger.sendMessage(MessageType.UpdateListeners);
+        } catch (e) {
+            // This error occurs if there is no pages able to handle this listener.
+            // It could happen if background page reloaded, when option page was not open.
+            Log.debug(e);
+        }
     }
-};
+
+    /**
+     * Executes a script on one of the open tabs.
+     *
+     * @param tabs - Tabs to execute a script on or null by default.
+     */
+    static async executeScriptOnTab(tabs: browser.Tabs.Tab[] | null = null): Promise<void> {
+        tabs = tabs || await browser.tabs.query({ url: '*://*/*' });
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const tab of tabs) {
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                await browser.tabs.executeScript(tab.id, { code });
+                return;
+            } catch (e) {
+                Log.error(e);
+            }
+        }
+    }
+
+    /**
+     * On tab update event handler.
+     *
+     * @param tabId - Tab id, not used in the code. Required by API.
+     * @param info - Tab update info.
+     * @param tab - Tab details.
+     */
+    private static onUpdate = (
+        tabId: number,
+        info: browser.Tabs.OnUpdatedChangeInfoType,
+        tab: browser.Tabs.Tab,
+    ): void => {
+        if (info.url && isHttpRequest(info.url)) {
+            KeepAlive.executeScriptOnTab([tab]);
+        }
+    };
+}
