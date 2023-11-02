@@ -126,7 +126,7 @@
         "message": "Modified rules: %rules_count%"
     },
     "filtering_log_stealth_rules": {
-        "message": "Stealth rules: %rules_count%"
+        "message": "Stealth Mode rules: %rules_count%"
     },
     "filtering_log_privacy_applied_rules": {
         "message": "Stealth Mode applied"
