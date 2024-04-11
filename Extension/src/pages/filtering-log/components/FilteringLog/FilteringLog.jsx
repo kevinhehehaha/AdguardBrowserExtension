@@ -19,11 +19,11 @@
 import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 
-import throttle from 'lodash/throttle';
+import { throttle } from 'lodash-es';
 
 import { Filters } from '../Filters';
 import { messenger } from '../../../services/messenger';
-import { Log } from '../../../../common/log';
+import { logger } from '../../../../common/logger';
 import { rootStore } from '../../stores/RootStore';
 import { RequestModal } from '../RequestWizard/RequestModal';
 import { Icons } from '../../../common/components/ui/Icons';
@@ -128,7 +128,7 @@ const FilteringLog = observer(() => {
                             break;
                         }
                         default: {
-                            Log.debug('There is no listener for type:', type);
+                            logger.debug('There is no listener for type:', type);
                             break;
                         }
                     }

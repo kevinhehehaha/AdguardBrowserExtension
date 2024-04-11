@@ -35,6 +35,7 @@ import {
     StealthActionEvent,
     StealthAllowlistActionEvent,
     CspReportBlockedEvent,
+    getDomain,
 } from '@adguard/tswebextension';
 
 import { messageHandler } from '../message-handler';
@@ -228,6 +229,8 @@ export class FilteringLogService {
 
         filteringLogApi.addEventData(tabId, {
             ...eventData,
+            // TODO refactor log event scheme to use requestDomain as string | null
+            requestDomain: getDomain(eventData.requestUrl) ?? undefined,
             requestRule: FilteringLogApi.createNetworkRuleEventData(rule),
         });
 
@@ -251,6 +254,7 @@ export class FilteringLogService {
 
         filteringLogApi.addEventData(tabId, {
             ...eventData,
+            requestDomain: getDomain(eventData.requestUrl) ?? undefined,
             requestRule: FilteringLogApi.createNetworkRuleEventData(rule),
         });
 
@@ -270,6 +274,7 @@ export class FilteringLogService {
 
         filteringLogApi.addEventData(tabId, {
             ...eventData,
+            requestDomain: getDomain(eventData.requestUrl) ?? undefined,
             requestRule: FilteringLogApi.createNetworkRuleEventData(rule),
         });
 

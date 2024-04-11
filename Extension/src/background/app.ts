@@ -19,7 +19,7 @@ import browser from 'webextension-polyfill';
 import zod from 'zod';
 
 import { MessageType, sendMessage } from '../common/messages';
-import { Log } from '../common/log';
+import { logger } from '../common/logger';
 import {
     Forward,
     ForwardAction,
@@ -89,6 +89,9 @@ export class App {
         // We will remove it once engine initialization becomes faster.
         KeepAlive.init();
 
+        // Reads persisted data from session storage.
+        await Engine.api.initStorage();
+
         // removes listeners on re-initialization, because new ones will be registered during process
         App.removeListeners();
 
@@ -145,9 +148,6 @@ export class App {
          * - Initializes storages for filters state, groups state and filters versions, based on app metadata.
          */
         await FiltersApi.init(isInstall);
-
-        // Initialize filters updates
-        await filterUpdateService.init();
 
         /**
          * Initializes promo notifications:
@@ -227,6 +227,9 @@ export class App {
 
             // Loads default filters
             await CommonFilterApi.initDefaultFilters(true);
+
+            // Write the current version to the storage only after successful initialization of the extension
+            await InstallApi.postSuccessInstall(currentAppVersion);
         }
 
         // Update additional scenario
@@ -240,6 +243,10 @@ export class App {
         await Engine.start();
 
         appContext.set(AppContextKey.IsInit, true);
+
+        // Initialize filters updates, after engine started, so that it won't mingle with engine
+        // initialization from current rules
+        filterUpdateService.init();
 
         await sendMessage({ type: MessageType.AppInitialized });
     }
@@ -280,7 +287,7 @@ export class App {
         try {
             await browser.runtime.setUninstallURL(App.uninstallUrl);
         } catch (e) {
-            Log.error('Cannot set app uninstall url. Origin error: ', e);
+            logger.error('Cannot set app uninstall url. Origin error: ', e);
         }
     }
 
@@ -294,7 +301,7 @@ export class App {
         try {
             clientId = zod.string().parse(storageClientId);
         } catch (e) {
-            Log.warn('Error while parsing client id, generating a new one');
+            logger.warn('Error while parsing client id, generating a new one');
             clientId = InstallApi.genClientId();
             await storage.set(CLIENT_ID_KEY, clientId);
         }

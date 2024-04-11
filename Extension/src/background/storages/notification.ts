@@ -28,6 +28,12 @@ export type Notification = {
     from: string,
     to: string,
     type: string,
+
+    /**
+     * Path to the background image for the promo.
+     * May be needed for different promos for different locales at the same time.
+     */
+    bgImage: string,
     bgColor?: string,
     textColor?: string,
     badgeBgColor?: string,
@@ -35,204 +41,271 @@ export type Notification = {
     icons?: Record<string, Record<string, string>>,
 };
 
-export const HALLOWEEN_23_ID = 'halloween23';
+/**
+ * List of locales for the Spring promo, not the Easter one. AG-31141.
+ */
+const SPRING_PROMO_LOCALES = [
+    'ru',
+    'uk',
+    'ar',
+    'be',
+    'bg',
+    'el',
+    'sr',
+    'hi',
+    'hy',
+    'fa',
+    'he',
+    'ms',
+    'id',
+    'tr',
+    'th',
+    'vi',
+    'zh_cn',
+    'zh_tw',
+];
 
-export const halloween23Notification: Notification = {
-    id: HALLOWEEN_23_ID,
+const EASTER_24_ID = 'easter24';
+
+let easter24Notification: Notification = {
+    id: EASTER_24_ID,
     locales: {
         en: {
-            title: 'Fact or fiction?',
-            btn: 'Investigate',
+            title: 'Time to improve protection',
+            btn: 'Learn how',
         },
-        ru: {
-            title: 'Верю не верю',
-            btn: 'Давайте проверим',
-        },
-        es: {
-            title: '¿Realidad o ficción?',
-            btn: '¡Adivinar!',
-        },
-        de: {
-            title: 'Falsch oder wahr?',
-            btn: 'Kommen Sie klar',
+        // there is no promo for Japanese
+        // ja: {},
+        ko: {
+            title: '개인정보 보호 강화',
+            btn: '자세히 알아보기',
         },
         fr: {
-            title: 'Fait ou fiction ?',
-            btn: 'Examinons',
+            title: 'Le moment de renouveler la protection',
+            btn: "Voir l'offre",
         },
         it: {
-            title: 'Fatto o finzione?',
-            btn: 'Esaminiamo',
+            title: 'Proteggiti online questa primavera',
+            btn: 'Vedere offerta',
         },
-        ko: {
-            title: '사실일까, 괴담일까?',
-            btn: '퀴즈 시작',
+        de: {
+            title: 'Frühling bedeutet Verbesserung',
+            btn: 'Schutz verbessern',
         },
-        ja: {
-            title: '事実か怪談か？',
-            btn: 'クイズに挑戦する',
-        },
-        zh_cn: {
-            title: '万圣节答题小游戏',
-            btn: '开始玩儿',
-        },
-        zh_tw: {
-            title: '萬聖節答題小遊戲',
-            btn: '開始玩',
-        },
-        uk: {
-            title: 'Факт чи вигадка?',
-            btn: 'Вгадай!',
-        },
-        pt_br: {
-            title: 'Realidade ou ficção?',
-            btn: 'Adivinhar',
-        },
-        pt_pt: {
-            title: 'Realidade ou ficção?',
-            btn: 'Adivinhar',
-        },
-        ar: {
-            title: 'حقيقة أم خيال؟',
-            btn: '!يخمن',
-        },
-        be: {
-            title: 'Факт ці выдумка?',
-            btn: 'Адгадайце!',
-        },
-        bg: {
-            title: 'Факт или измислица?',
-            btn: 'Познайте!',
-        },
-        ca: {
-            title: 'Realitat o ficció?',
-            btn: 'Endevina!',
-        },
-        cs: {
-            title: 'Pravda nebo fikce?',
-            btn: 'Tipni si!',
-        },
-        da: {
-            title: 'Fakta eller fiktion?',
-            btn: 'Gætte!',
-        },
-        el: {
-            title: 'Σωστό ή λάθος?',
-            btn: 'Εικασία!',
-        },
-        es_419: {
-            title: '¿Realidad o ficción?',
-            btn: '¡Adivinar!',
-        },
-        fa: {
-            title: 'واقعیت یا تخیل؟',
-            btn: '!حدس بزن',
-        },
-        fi: {
-            title: 'Totta vai tarua?',
-            btn: 'Arvaus!',
-        },
-        he: {
-            title: '?עובדה או בדיה',
-            btn: '!לְנַחֵשׁ',
-        },
-        hr: {
-            title: 'Činjenica ili fikcija?',
-            btn: 'Pogodite!',
-        },
-        hu: {
-            title: 'Tény vagy fikció?',
-            btn: 'Találd ki!',
-        },
-        hy: {
-            title: 'Փաստ, թե հորինված.',
-            btn: 'Գուշակիր',
-        },
-        id: {
-            title: 'Fakta atau Fiksi?',
-            btn: 'Tebakan!',
-        },
-        lt: {
-            title: 'Faktas ar fikcija?',
-            btn: 'Atspėk!',
-        },
-        ms: {
-            title: 'Fakta atau fiksyen?',
-            btn: 'Teka!',
-        },
-        nb: {
-            title: 'Fakta eller fiksjon?',
-            btn: 'Gjett!',
-        },
-        nl: {
-            title: 'Feit of Fictie?',
-            btn: 'Gok!',
-        },
-        pl: {
-            title: 'Fakt czy fikcja?',
-            btn: 'Zgadywać!',
-        },
-        ro: {
-            title: 'Realitate sau fictiune?',
-            btn: 'Ghici!',
-        },
-        sk: {
-            title: 'Skutočnosť alebo fikcia?',
-            btn: 'Hádaj!',
-        },
-        sl: {
-            title: 'Dejstvo ali fikcija?',
-            btn: 'Ugani!',
-        },
-        'sr-Latn': {
-            title: 'Tačno ili netačno?',
-            btn: 'Izgleda!',
-        },
-        sv: {
-            title: 'Fakta eller påhitt?',
-            btn: 'Gissa!',
-        },
-        tr: {
-            title: 'Gerçek mi kurgu mu?',
-            btn: 'Tahmin etmek!',
-        },
-        vi: {
-            title: 'Sự thật hay hư cấu?',
-            btn: 'Đoán!',
-        },
-        hi: {
-            title: 'तथ्य या कल्पना?',
-            btn: 'अनुमान लगाना!',
+        es: {
+            title: 'Es hora de protegerte',
+            btn: 'Descubre cómo',
         },
         et: {
-            title: 'Fakt või väljamõeldis?',
-            btn: 'Arva ära!',
+            title: 'Aeg kaitset parandada',
+            btn: 'Õpi kuidas',
         },
-        th: {
-            title: 'เรื่องจริงหรือนิยาย?',
-            btn: 'เดา!',
+        pt_br: {
+            title: 'É hora de se proteger',
+            btn: 'Descubra como',
+        },
+        pt_pt: {
+            title: 'É hora de se proteger',
+            btn: 'Descubra como',
+        },
+        ca: {
+            title: 'Millorar la protecció',
+            btn: 'Aprèn com',
+        },
+        cs: {
+            title: 'Čas zlepšit ochranu',
+            btn: 'Zjistěte jak',
+        },
+        da: {
+            title: 'Forbedre beskyttelsen',
+            btn: 'Lær hvordan',
+        },
+        es_419: {
+            title: 'Mejorar la protección',
+            btn: 'Aprender cómo',
+        },
+        fi: {
+            title: 'Paranna suojausta',
+            btn: 'Opi kuinka',
+        },
+        hr: {
+            title: 'Poboljšajte zaštitu',
+            btn: 'Nauči kako',
+        },
+        hu: {
+            title: 'Ideje javítani a védelmet',
+            btn: 'Hogyan?',
+        },
+        lt: {
+            title: 'Laikas pagerinti apsaugą',
+            btn: 'Išmokti kaip',
+        },
+        ms: {
+            title: 'Tingkatkan perlindungan anda',
+            btn: 'Ketahui caranya',
+        },
+        nb: {
+            title: 'Forbedre beskyttelsen',
+            btn: 'Lær hvordan',
+        },
+        nl: {
+            title: 'Verbeter de bescherming',
+            btn: 'Leren hoe',
+        },
+        pl: {
+            title: 'Czas poprawić ochronę',
+            btn: 'Naucz się jak',
+        },
+        ro: {
+            title: 'Îmbunătățiți protecția',
+            btn: 'Afla cum',
+        },
+        sk: {
+            title: 'Čas na zlepšenie ochrany',
+            btn: 'Zistite ako',
+        },
+        sl: {
+            title: 'Čas je za izboljšanje zaščite',
+            btn: 'Nauči se kako',
+        },
+        sv: {
+            title: 'Dags att förbättra skyddet',
+            btn: 'Lära sig hur',
         },
     },
     text: '',
-    url: Forward.get({ action: ForwardAction.Halloween }),
-    from: '25 October 2023 12:00:00',
-    to: '1 November 2023 23:59:00',
+    url: Forward.get({ action: ForwardAction.Easter24 }),
+    from: '28 March 2024 12:00:00',
+    to: '3 April 2024 23:59:00',
     type: 'animated',
+    bgImage: browser.runtime.getURL('assets/images/easter24.svg'),
     icons: {
         ICON_GREEN: {
-            '19': browser.runtime.getURL('assets/icons/halloween23-on-19.png'),
-            '38': browser.runtime.getURL('assets/icons/halloween23-on-38.png'),
+            '19': browser.runtime.getURL('assets/icons/easter24-on-19.png'),
+            '38': browser.runtime.getURL('assets/icons/easter24-on-38.png'),
         },
         ICON_GRAY: {
-            '19': browser.runtime.getURL('assets/icons/halloween23-off-19.png'),
-            '38': browser.runtime.getURL('assets/icons/halloween23-off-38.png'),
+            '19': browser.runtime.getURL('assets/icons/easter24-off-19.png'),
+            '38': browser.runtime.getURL('assets/icons/easter24-off-38.png'),
         },
     },
 };
 
 /**
+ * Diff data for the Spring promo.
+ */
+const spring24NotificationUpdateDiff = {
+    locales: {
+        ar: {
+            title: 'حان الوقت لتحسين الحماية',
+            btn: 'تعلم كيف',
+        },
+        be: {
+            title: 'Час палепшыць абарону',
+            btn: 'Даведацца як',
+        },
+        bg: {
+            title: 'Подобрете защитата си',
+            btn: 'Разберете как',
+        },
+        el: {
+            title: 'Βελτιώστε την προστασία σας',
+            btn: 'Βρες πως',
+        },
+        fa: {
+            title: 'زمان بهبود دفاع شما است',
+            btn: 'دریابید که چگونه',
+        },
+        hi: {
+            title: 'अपनी सुरक्षा में सुधार करें',
+            btn: 'कैसे?',
+        },
+        he: {
+            title: 'שפר את ההגנה שלך',
+            btn: 'לברר איך',
+        },
+        hy: {
+            title: 'Պաշտպանեք ձեզ հինտերնետում',
+            btn: 'Պարզել, թե ինչպես',
+        },
+        id: {
+            title: 'Tingkatkan perlindungan anda',
+            btn: 'Cari tahu caranya',
+        },
+        ms: {
+            title: 'Tingkatkan perlindungan anda',
+            btn: 'Ketahui caranya',
+        },
+        ru: {
+            title: 'Весна — время улучшить защиту',
+            btn: 'Узнать как',
+        },
+        'sr-Latn': {
+            title: 'Poboljšajte zaštitu',
+            btn: 'Saznajte kako',
+        },
+        th: {
+            title: 'ปรับปรุงการป้องกัน',
+            btn: 'เรียนรู้วิธีการ',
+        },
+        tr: {
+            title: 'Savunmanızı geliştirme zamanı',
+            btn: 'Nasıl?',
+        },
+        uk: {
+            title: 'Час покращити захист',
+            btn: 'Дізнатись як',
+        },
+        vi: {
+            title: 'Cải thiện khả năng bảo vệ của bạn',
+            btn: 'Làm sao?',
+        },
+        zh_cn: {
+            title: '增强隐私保护',
+            btn: '了解更多',
+        },
+        zh_tw: {
+            title: '增強隱私保護',
+            btn: '了解更多',
+        },
+    },
+    bgImage: browser.runtime.getURL('assets/images/spring24.svg'),
+    icons: {
+        ICON_GREEN: {
+            '19': browser.runtime.getURL('assets/icons/spring24-on-19.png'),
+            '38': browser.runtime.getURL('assets/icons/spring24-on-38.png'),
+        },
+        ICON_GRAY: {
+            '19': browser.runtime.getURL('assets/icons/spring24-off-19.png'),
+            '38': browser.runtime.getURL('assets/icons/spring24-off-38.png'),
+        },
+    },
+};
+
+const normalizeLanguage = (locale: string): string | null => {
+    if (!locale) {
+        return null;
+    }
+    return locale.toLowerCase().replace('-', '_');
+};
+
+// possible values of browser lang: 'en', or 'en-US' which is 'en_us' after normalization
+const currentLocale = normalizeLanguage(browser.i18n.getUILanguage());
+
+const shouldShowSpring24Promo = currentLocale
+    && SPRING_PROMO_LOCALES.some((locale) => currentLocale.startsWith(locale));
+
+if (shouldShowSpring24Promo) {
+    easter24Notification = {
+        ...easter24Notification,
+        // update the notification data with the Spring promo data
+        ...spring24NotificationUpdateDiff,
+    };
+}
+
+/**
  * In-memory notifications mapping.
  */
 export const notificationStorage = new Map<string, Notification>([
-    [HALLOWEEN_23_ID, halloween23Notification],
+    [EASTER_24_ID, easter24Notification],
 ]);

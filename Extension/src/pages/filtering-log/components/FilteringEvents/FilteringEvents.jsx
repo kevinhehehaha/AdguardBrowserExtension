@@ -28,7 +28,7 @@ import { observer } from 'mobx-react';
 import { FixedSizeList } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
-import throttle from 'lodash/throttle';
+import { throttle } from 'lodash-es';
 import cn from 'classnames';
 
 import { rootStore } from '../../stores/RootStore';
@@ -136,7 +136,9 @@ const ruleAccessor = (props) => {
 
     if (replaceRules) {
         const rulesCount = replaceRules.length;
-        ruleText = reactTranslator.getMessage('filtering_log_modified_rules', { rules_count: rulesCount });
+        ruleText = `${reactTranslator.getMessage('filtering_log_modified_rules', {
+            rules_count: rulesCount,
+        })}`;
     }
 
     if (stealthAllowlistRules && stealthAllowlistRules.length > 0) {

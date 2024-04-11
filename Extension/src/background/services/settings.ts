@@ -22,7 +22,7 @@ import {
     ChangeUserSettingMessage,
     ApplySettingsJsonMessage,
 } from '../../common/messages';
-import { Log } from '../../common/log';
+import { logger } from '../../common/logger';
 import { SettingOption } from '../schema';
 import { messageHandler } from '../message-handler';
 import { UserAgent } from '../../common/user-agent';
@@ -54,6 +54,12 @@ export type ExportMessageResponse = {
 export type GetOptionsDataResponse = {
     settings: SettingsData,
     appVersion: string,
+    libVersions: {
+        tswebextension: string,
+        tsurlfilter: string,
+        scriptlets: string,
+        extendedCss: string,
+    },
     environmentOptions: {
         isChrome: boolean,
     },
@@ -127,6 +133,7 @@ export class SettingsService {
         return {
             settings: SettingsApi.getData(),
             appVersion: Prefs.version,
+            libVersions: Prefs.libVersions,
             environmentOptions: {
                 isChrome: UserAgent.isChrome,
             },
@@ -180,6 +187,7 @@ export class SettingsService {
 
         Engine.debounceUpdate();
 
+        // TODO: Looks like not using. Maybe lost listener in refactoring.
         listeners.notifyListeners(listeners.SettingsUpdated, isImported);
         return isImported;
     }
@@ -215,7 +223,7 @@ export class SettingsService {
                 await TabsApi.reload(activeTab.id);
             }
         } catch (e) {
-            Log.error('Error while updating filtering state', e);
+            logger.error('Error while updating filtering state', e);
         }
     }
 
@@ -227,7 +235,7 @@ export class SettingsService {
         try {
             Engine.debounceUpdate();
         } catch (e) {
-            Log.error('Failed to change stealth mode state', e);
+            logger.error('Failed to change stealth mode state', e);
         }
     }
 
@@ -240,7 +248,7 @@ export class SettingsService {
         try {
             Engine.api.setHideReferrer(isHideReferrerEnabled);
         } catch (e) {
-            Log.error('Failed to change `hide referrer` option state', e);
+            logger.error('Failed to change `hide referrer` option state', e);
         }
     }
 
@@ -253,7 +261,7 @@ export class SettingsService {
         try {
             Engine.api.setHideSearchQueries(isHideSearchQueriesEnabled);
         } catch (e) {
-            Log.error('Failed to change `hide search queries` option state', e);
+            logger.error('Failed to change `hide search queries` option state', e);
         }
     }
 
@@ -266,7 +274,7 @@ export class SettingsService {
         try {
             Engine.api.setSendDoNotTrack(isSendDoNotTrackEnabled);
         } catch (e) {
-            Log.error('Failed to change `send do not track` option state', e);
+            logger.error('Failed to change `send do not track` option state', e);
         }
     }
 
@@ -279,7 +287,7 @@ export class SettingsService {
         try {
             Engine.api.setBlockChromeClientData(isRemoveXClientDataEnabled);
         } catch (e) {
-            Log.error('Failed to change `remove x-client-data` option state', e);
+            logger.error('Failed to change `remove x-client-data` option state', e);
         }
     }
 
@@ -292,7 +300,7 @@ export class SettingsService {
         try {
             await Engine.api.setBlockWebRTC(isBlockWebRTCEnabled);
         } catch (e) {
-            Log.error('Failed to change `block WebRTC` option state', e);
+            logger.error('Failed to change `block WebRTC` option state', e);
         }
     }
 

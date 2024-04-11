@@ -1,9 +1,10 @@
-! Checksum: MOkKOdgX6pl8awShHvc2tw
+! Checksum: e3xt0GV6mrlzxeqn/lqOOg
+! Diff-Path: ../patches/10/10-s-1711964226-3600.patch
 ! Title: Filter unblocking search ads and self-promotion
 ! Description: Filter that unblocks search ads in Google, DuckDuckGo, Bing, or Yahoo and self-promotion on websites.
-! Version: 2.0.3.6
-! TimeUpdated: 2023-06-05T09:02:08+00:00
-! Expires: 4 days (update frequency)
+! Version: 2.0.3.25
+! TimeUpdated: 2024-04-01T09:31:36+00:00
+! Expires: 10 days (update frequency)
 ! Homepage: https://github.com/AdguardTeam/AdGuardFilters
 ! License: https://github.com/AdguardTeam/AdguardFilters/blob/master/LICENSE
 !
@@ -125,6 +126,7 @@ search.yahoo.co.jp#@#.sw-Card.Ad
 !
 ! Google
 !
+@@||ad.doubleclick.net/searchads/link/click?$popup,domain=google.*
 google.ad,google.ae,google.al,google.am,google.as,google.at,google.az,google.ba,google.be,google.bf,google.bg,google.bi,google.bj,google.bs,google.bt,google.by,google.ca,google.cat,google.cd,google.cf,google.cg,google.ch,google.ci,google.cl,google.cm,google.cn,google.co.ao,google.co.bw,google.co.ck,google.co.cr,google.co.id,google.co.il,google.co.in,google.co.jp,google.co.ke,google.co.kr,google.co.ls,google.co.ma,google.co.mz,google.co.nz,google.co.th,google.co.tz,google.co.ug,google.co.uk,google.co.uz,google.co.ve,google.co.vi,google.co.za,google.co.zm,google.co.zw,google.com,google.com.af,google.com.ag,google.com.ai,google.com.ar,google.com.au,google.com.bd,google.com.bh,google.com.bn,google.com.bo,google.com.br,google.com.bz,google.com.co,google.com.cu,google.com.cy,google.com.do,google.com.ec,google.com.eg,google.com.et,google.com.fj,google.com.gh,google.com.gi,google.com.gt,google.com.hk,google.com.jm,google.com.kh,google.com.kw,google.com.lb,google.com.ly,google.com.mm,google.com.mt,google.com.mx,google.com.my,google.com.na,google.com.nf,google.com.ng,google.com.ni,google.com.np,google.com.om,google.com.pa,google.com.pe,google.com.pg,google.com.ph,google.com.pk,google.com.pr,google.com.py,google.com.qa,google.com.sa,google.com.sb,google.com.sg,google.com.sl,google.com.sv,google.com.tj,google.com.tr,google.com.tw,google.com.ua,google.com.uy,google.com.vc,google.com.vn,google.cv,google.cz,google.de,google.dj,google.dk,google.dm,google.dz,google.ee,google.es,google.fi,google.fm,google.fr,google.ga,google.ge,google.gg,google.gl,google.gm,google.gp,google.gr,google.gy,google.hn,google.hr,google.ht,google.hu,google.ie,google.im,google.iq,google.is,google.it,google.je,google.jo,google.kg,google.ki,google.kz,google.la,google.li,google.lk,google.lt,google.lu,google.lv,google.md,google.me,google.mg,google.mk,google.ml,google.mn,google.ms,google.mu,google.mv,google.mw,google.ne,google.nl,google.no,google.nr,google.nu,google.pl,google.pn,google.ps,google.pt,google.ro,google.rs,google.ru,google.rw,google.sc,google.se,google.sh,google.si,google.sk,google.sm,google.sn,google.so,google.sr,google.st,google.td,google.tg,google.tk,google.tl,google.tm,google.tn,google.to,google.tt,google.vg,google.vu,google.ws#@#div[data-is-promoted="true"]
 google.ad,google.ae,google.al,google.am,google.as,google.at,google.az,google.ba,google.be,google.bf,google.bg,google.bi,google.bj,google.bs,google.bt,google.by,google.ca,google.cat,google.cd,google.cf,google.cg,google.ch,google.ci,google.cl,google.cm,google.cn,google.co.ao,google.co.bw,google.co.ck,google.co.cr,google.co.id,google.co.il,google.co.in,google.co.jp,google.co.ke,google.co.kr,google.co.ls,google.co.ma,google.co.mz,google.co.nz,google.co.th,google.co.tz,google.co.ug,google.co.uk,google.co.uz,google.co.ve,google.co.vi,google.co.za,google.co.zm,google.co.zw,google.com,google.com.af,google.com.ag,google.com.ai,google.com.ar,google.com.au,google.com.bd,google.com.bh,google.com.bn,google.com.bo,google.com.br,google.com.bz,google.com.co,google.com.cu,google.com.cy,google.com.do,google.com.ec,google.com.eg,google.com.et,google.com.fj,google.com.gh,google.com.gi,google.com.gt,google.com.hk,google.com.jm,google.com.kh,google.com.kw,google.com.lb,google.com.ly,google.com.mm,google.com.mt,google.com.mx,google.com.my,google.com.na,google.com.nf,google.com.ng,google.com.ni,google.com.np,google.com.om,google.com.pa,google.com.pe,google.com.pg,google.com.ph,google.com.pk,google.com.pr,google.com.py,google.com.qa,google.com.sa,google.com.sb,google.com.sg,google.com.sl,google.com.sv,google.com.tj,google.com.tr,google.com.tw,google.com.ua,google.com.uy,google.com.vc,google.com.vn,google.cv,google.cz,google.de,google.dj,google.dk,google.dm,google.dz,google.ee,google.es,google.fi,google.fm,google.fr,google.ga,google.ge,google.gg,google.gl,google.gm,google.gp,google.gr,google.gy,google.hn,google.hr,google.ht,google.hu,google.ie,google.im,google.iq,google.is,google.it,google.je,google.jo,google.kg,google.ki,google.kz,google.la,google.li,google.lk,google.lt,google.lu,google.lv,google.md,google.me,google.mg,google.mk,google.ml,google.mn,google.ms,google.mu,google.mv,google.mw,google.ne,google.nl,google.no,google.nr,google.nu,google.pl,google.pn,google.ps,google.pt,google.ro,google.rs,google.ru,google.rw,google.sc,google.se,google.sh,google.si,google.sk,google.sm,google.sn,google.so,google.sr,google.st,google.td,google.tg,google.tk,google.tl,google.tm,google.tn,google.to,google.tt,google.vg,google.vu,google.ws#@#.ads-fr
 google.ad,google.ae,google.al,google.am,google.as,google.at,google.az,google.ba,google.be,google.bf,google.bg,google.bi,google.bj,google.bs,google.bt,google.by,google.ca,google.cat,google.cd,google.cf,google.cg,google.ch,google.ci,google.cl,google.cm,google.cn,google.co.ao,google.co.bw,google.co.ck,google.co.cr,google.co.id,google.co.il,google.co.in,google.co.jp,google.co.ke,google.co.kr,google.co.ls,google.co.ma,google.co.mz,google.co.nz,google.co.th,google.co.tz,google.co.ug,google.co.uk,google.co.uz,google.co.ve,google.co.vi,google.co.za,google.co.zm,google.co.zw,google.com,google.com.af,google.com.ag,google.com.ai,google.com.ar,google.com.au,google.com.bd,google.com.bh,google.com.bn,google.com.bo,google.com.br,google.com.bz,google.com.co,google.com.cu,google.com.cy,google.com.do,google.com.ec,google.com.eg,google.com.et,google.com.fj,google.com.gh,google.com.gi,google.com.gt,google.com.hk,google.com.jm,google.com.kh,google.com.kw,google.com.lb,google.com.ly,google.com.mm,google.com.mt,google.com.mx,google.com.my,google.com.na,google.com.nf,google.com.ng,google.com.ni,google.com.np,google.com.om,google.com.pa,google.com.pe,google.com.pg,google.com.ph,google.com.pk,google.com.pr,google.com.py,google.com.qa,google.com.sa,google.com.sb,google.com.sg,google.com.sl,google.com.sv,google.com.tj,google.com.tr,google.com.tw,google.com.ua,google.com.uy,google.com.vc,google.com.vn,google.cv,google.cz,google.de,google.dj,google.dk,google.dm,google.dz,google.ee,google.es,google.fi,google.fm,google.fr,google.ga,google.ge,google.gg,google.gl,google.gm,google.gp,google.gr,google.gy,google.hn,google.hr,google.ht,google.hu,google.ie,google.im,google.iq,google.is,google.it,google.je,google.jo,google.kg,google.ki,google.kz,google.la,google.li,google.lk,google.lt,google.lu,google.lv,google.md,google.me,google.mg,google.mk,google.ml,google.mn,google.ms,google.mu,google.mv,google.mw,google.ne,google.nl,google.no,google.nr,google.nu,google.pl,google.pn,google.ps,google.pt,google.ro,google.rs,google.ru,google.rw,google.sc,google.se,google.sh,google.si,google.sk,google.sm,google.sn,google.so,google.sr,google.st,google.td,google.tg,google.tk,google.tl,google.tm,google.tn,google.to,google.tt,google.vg,google.vu,google.ws#@##center_col > #taw > #tvcap > .cu-container > .commercial-unit-desktop-top
@@ -190,6 +192,10 @@ google.ad,google.ae,google.al,google.am,google.as,google.at,google.az,google.ba,
 ! Fanboy's Annoyances
 google.ae,google.at,google.be,google.bg,google.by,google.ca,google.ch,google.cl,google.co.id,google.co.il,google.co.in,google.co.jp,google.co.ke,google.co.kr,google.co.nz,google.co.th,google.co.uk,google.co.ve,google.co.za,google.com,google.com.ar,google.com.au,google.com.br,google.com.co,google.com.ec,google.com.eg,google.com.hk,google.com.mx,google.com.my,google.com.pe,google.com.ph,google.com.pk,google.com.py,google.com.sa,google.com.sg,google.com.tr,google.com.tw,google.com.ua,google.com.uy,google.com.vn,google.cz,google.de,google.dk,google.dz,google.ee,google.es,google.fi,google.fr,google.gr,google.hr,google.hu,google.ie,google.it,google.lt,google.lv,google.nl,google.no,google.pl,google.pt,google.ro,google.rs,google.ru,google.se,google.sk#@##taw > div > [data-ved]
 !
+! Google Travel
+! https://github.com/AdguardTeam/AdguardFilters/issues/171055#issuecomment-1901900079
+google.*#@#c-wiz[jsrenderer="YTTf6c"] > .bhapoc.oJeWuf[jsname="bN97Pc"][data-ved]
+!
 ! Ask.com
 @@||ask.com/web$document
 search.ask.com#@#.sponsoredTop
@@ -200,7 +206,7 @@ search.ask.com#@##sponsoredTop
 !
 ! Yandex.Search
 ! ad in the tooltip when typing
-yandex.*#@#.mini-suggest__popup-content > li[data-type="nav"]
+yandex.*#@#body:not([data-bem*="pogoda"]) .mini-suggest__popup-content > li[data-type="nav"]
 ! ads in the search results
 [$path=/search]yandex.*#@?#.serp-list > li.serp-item:has(> div[data-bem*="organic"] > div.organic__title-wrapper > a[href][data-event-required])
 ! END: Yandex
@@ -247,35 +253,30 @@ amazon.*#@#div[data-cel-widget^="MAIN-SHOPPING_ADVISER-"]
 amazon.*#@#.s-search-results > div[data-asin] div[data-component-props*="Sponsored"]
 amazon.*#@?#.s-search-results > div[data-asin]:has(> div[class] > div[cel_widget_id] > div[data-component-props*="Sponsored"])
 amazon.de,amazon.com,amazon.co.uk,amazon.fr,amazon.in,amazon.it,amazon.es#@#div[class*="widget=loom-"][class*="FEATURED"]
-amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.se,amazon.sg#@#div[id^="sp_detail"]
-amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.se,amazon.sg#@##sponsoredProducts2_feature_div
-amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.se,amazon.sg#@#div[id^="sponsoredProducts"]
-amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.se,amazon.sg#@#div[cel_widget_id="sims-consolidated-3_csm_instrumentation_wrapper"]
-amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.se,amazon.sg#@#div[cel_widget_id*="_SponsoredProducts"]
-amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.se,amazon.sg#@#div[cel_widget_id*="desktop-dp-"]
-amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.be,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.se,amazon.sg#@#div[cel_widget_id="sp-rhf-desktop-carousel_desktop-rhf_0"]
+amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.com.be,amazon.se,amazon.sg#@#div[id^="sp_detail"]
+amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.com.be,amazon.se,amazon.sg#@##sponsoredProducts2_feature_div
+amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.com.be,amazon.se,amazon.sg#@#div[id^="sponsoredProducts"]
+amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.com.be,amazon.se,amazon.sg#@#div[cel_widget_id="sims-consolidated-3_csm_instrumentation_wrapper"]
+amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.com.be,amazon.se,amazon.sg#@#div[cel_widget_id*="_SponsoredProducts"]
+amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.com.be,amazon.se,amazon.sg#@#div[cel_widget_id*="desktop-dp-"]
+amazon.ae,amazon.ca,amazon.cn,amazon.co.jp,amazon.co.uk,amazon.com,amazon.com.au,amazon.com.be,amazon.com.br,amazon.com.mx,amazon.com.tr,amazon.de,amazon.eg,amazon.es,amazon.fr,amazon.in,amazon.it,amazon.nl,amazon.pl,amazon.sa,amazon.com.be,amazon.se,amazon.sg#@#div[cel_widget_id="sp-rhf-desktop-carousel_desktop-rhf_0"]
+amazon.*#@#div[cel_widget_id="mobile-dp-sims_SPThematicBrand_Same"]
+amazon.*#@#section[class*="csm-placement-id"]
+amazon.*#@?#div[data-order-sm]:has(> div[data-csa-c-painter="ad-topper-desktop-card"]:first-child + div[data-csa-c-painter="enumclaw-slot-display-ad"]:last-child)
+amazon.*#@##dp-container > #px-profile_feature_div[data-csa-c-type="widget"]
+amazon.*#@#div[data-csa-c-painter="ad-topper-desktop-card"]
+amazon.*#@#.sbv-ad-content-container
+amazon.*#@?#div[data-display-at]:has(> div[data-csa-c-painter="ad-topper-desktop-card"]:first-child + div[style="display: none !important;"]:last-child)
 !
 ! https://github.com/AdguardTeam/AdguardFilters/issues/136364
 search.brave.com#@#div[data-advertiser-id]
 ! https://github.com/AdguardTeam/AdguardFilters/issues/117527
 buscape.com.br#@#div[class^="Hits_SponsoredWrapper__"]
 !
-! Mediafire premium upgrade
-mediafire.com#@##upsellBox
+! developer.mozilla.org - self-promo in documentation (the rule is from EasyList)
+@@||developer.mozilla.org/pong/
 ! Startpage
 @@||startpage.com/adsense/search/async-ads.js$domain=startpage.com
-! Irr
-irr.ru#@#.ad-link
-@@||an.yandex.ru$domain=irr.ru
-! Nigma.ru
-nigma.ru#@#.ad-link
-@@||an.yandex.ru$domain=nigma.ru
-! Mail.ru
-go.mail.ru#@#.response___wrapper > #js-topBar > div > div[class*="p"][class*="t"] > style + div
-go.mail.ru#@#.response___wrapper > #js-bottomBar > div > div[class*="b"][class*="t"] > style + div
-go.mail.ru#$#.response___wrapper > #js-topBar > div > div[class*="p"][class*="t"] > style + div { position: absolute!important; left: -3000px!important; }
-go.mail.ru#$#.response___wrapper > #js-bottomBar > div > div[class*="b"][class*="t"] > style + div { position: absolute!important; left: -3000px!important; }
-! go.mail.ru - ads in search results
 !
 ! Ebay
 ebay.co.uk,ebay.com,ebay.com.au#@?#.mfe-reco-ct:-abp-has(.mfe-promoted-label)
@@ -298,31 +299,15 @@ yaani.com.tr#@##content > div[advicetype="Shopping"] > .shoppingWidget
 news.fresheye.com#@#.bk2.spsite
 ! Rakuten web search
 websearch.rakuten.co.jp#@##ad-ichiba
-! epochtimes.de
-epochtimes.de#@##spendPopupBG
-epochtimes.de#@##news-content .buchempfehlung ~ p
-epochtimes.de#@##news-content .buchempfehlung
-epochtimes.de#@##news-content .buchempfehlung ~ h3
-epochtimes.de#@##news-content .buchempfehlung ~ p + div[id^="attachment"]
-! n-tv.de -- coupons
-n-tv.de#@#.sparwelt
 ! https://github.com/AdguardTeam/AdguardFilters/issues/43719
 etsy.com#@?#.responsive-listing-grid > li:has( > div > a div > .ad-iindicator)
-! Search.Tut.By
-search.tut.by#@#.ad-link
-@@||an.yandex.ru$domain=search.tut.by
-! Rambler.ru
-@@||nova.rambler.ru/search$document
-@@||images.rambler.ru/$document
-! org.rambler.ru
-org.rambler.ru#@#.ad-serp-item
 ! DuckDuckGo
-3g2upl4pq6kufc4m.onion,duckduckgo.com#@#.result--ad > .result__body
-3g2upl4pq6kufc4m.onion,duckduckgo.com#@#.sponsored
-3g2upl4pq6kufc4m.onion,duckduckgo.com#@#.highlight_sponsored
-3g2upl4pq6kufc4m.onion,duckduckgo.com#@##ads
-3g2upl4pq6kufc4m.onion,duckduckgo.com#@#.js-results-ads
-3g2upl4pq6kufc4m.onion,duckduckgo.com#@#.results--ads
+duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion,duckduckgo.com#@#.result--ad > .result__body
+duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion,duckduckgo.com#@#.sponsored
+duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion,duckduckgo.com#@#.highlight_sponsored
+duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion,duckduckgo.com#@##ads
+duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion,duckduckgo.com#@#.js-results-ads
+duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion,duckduckgo.com#@#.results--ads
 ! Ecosia search
 ecosia.org#@#.results-ads
 ecosia.org#@#.card-ad
@@ -340,6 +325,9 @@ lite.qwant.com#@?#.content > article.result:has(> p > span.ad)
 oscobo.com#@?##results-list > .result:has(> a > .cite > .ba)
 ! Swisscows.com Search
 swisscows.com#@#.web-results > .a11t
+! tempest.com search
+tempest.com#@#.search-result-item--ad
+tempest.com#@?#.search-result-item:has(> div.search-result-item__text--sidebar-ad-or-mobile)
 ! comss.ru
 comss.ru#@##main > .flat td[style*="180px"] > .block
 comss.ru#@##main > .flat td[style*="260px"] > .av:nth-child(2)
@@ -353,32 +341,15 @@ atresplayer.com#@#.mod_blanco
 ! https://github.com/AdguardTeam/ExperimentalFilter/issues/1041
 ! Unblock the sliders
 @@||adwolf.ru^$domain=retrofm.ru|radio7.ru|europaplus.ru
-@@||retrofm.ru/template/Retro-2012/js/adwolf.js$domain=retrofm.ru
 ! http://forum.adguard.com/showthread.php?9264
 consultant.ru#@#img[Width="468"][height="60"]
 ! alibaba.com - promoted items in search results
 alibaba.com#@?#div[data-content="abox-ProductNormalList"] > div.J-offer-wrapper:has(> div > i.search-ad-icon)
 !-------------------------------------------------------------------------------!
-mercurynews.com#@#div.info-box[id^="ConneXt_Action_Id-"]
-@@||shop.kicker.de^
-! https://github.com/AdguardTeam/AdguardFilters/issues/38865
-etsy.com#@#div[data-behat-search-results-lg] .listing-link.logged:not([data-shop-id])
-!
-! stuttgarter-nachrichten.de - whitelisting Verlagsangebot
-stuttgarter-nachrichten.de#@#.ga_hptta .content > a[data-tags="Verlagsangebot"]
-stuttgarter-nachrichten.de#@?#.ga_hptta > .item:has(> .content > a[data-tags="Verlagsangebot"])
 ! https://github.com/AdguardTeam/AdguardFilters/issues/138396
 ipv6.baidu.com,www.baidu.com,www1.baidu.com,xueshu.baidu.com#@##content_left > div:not([class]) > div[data-placeid]
 ! https://github.com/AdguardTeam/AdguardFilters/issues/33697
 baidu.com#@#.bds-list-ads
-! https://github.com/AdguardTeam/AdguardFilters/issues/59466
-adda247.com#@#iframe[name^="google_ads_iframe"]
-adda247.com#@#div[id^="div-gpt-ad"]
-@@||securepubads.g.doubleclick.net/tag/js/gpt.js$domain=adda247.com
-@@||securepubads.g.doubleclick.net/gpt/pubads_impl_*.js$domain=adda247.com
-@@||securepubads.g.doubleclick.net/gampad/ads?gdfp_req=1$domain=adda247.com
-@@||tpc.googlesyndication.com/simgad/$domain=adda247.com,image
-@@||adclick.g.doubleclick.net/pcs/click?xai=$popup
 !
 ! https://github.com/AdguardTeam/AdguardFilters/issues/100525
 tf1.fr#@#div[aria-describedby^="max-banner-"]
@@ -386,6 +357,8 @@ tf1.fr#@#div[aria-describedby^="max-banner-"]
 home.kingsoft.jp#@?#.search > span.url > a.pr:upward(2)
 ! https://forum.adguard.com/index.php?threads/anyway-to-get-rid-of-sponsered-ads-please.50960/
 walmart.com#@?#.flex > div[class]:has(> div[class][style*="contain-intrinsic-size"] > div[data-item-id] > a[href^="https://wrd.walmart.com/track?adUid"])
+! https://github.com/AdguardTeam/AdguardFilters/issues/174387
+2gis.ru#@#._3hmsj
 !
 !#safari_cb_affinity
 !
@@ -394,5 +367,8 @@ walmart.com#@?#.flex > div[class]:has(> div[class][style*="contain-intrinsic-siz
 ! is properly working.
 !
 !+ NOT_OPTIMIZED
-adguard.com,adguard.app##.hello_from_adguard_usefulads
+adguard.info,adguard.com,adguard.app##.hello_from_adguard_usefulads
+! Detect of using AdGuard products
+!+ NOT_PLATFORM(windows, mac, android, ios, ext_ublock) NOT_OPTIMIZED
+adguard.info,adguard.com,adguard.app##.hello_from_adguard_ext
 !

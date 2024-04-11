@@ -20,6 +20,8 @@ import type { Config } from 'jest';
 const transformedModules = [
     '@adguard/tsurlfilter',
     '@adguard/tswebextension',
+    '@adguard/filters-downloader',
+    'lodash-es',
 ];
 
 const config: Config = {
@@ -43,6 +45,8 @@ const config: Config = {
     globals: {
         // TODO: (AG-20414) Add tests for Firefox AMO
         IS_FIREFOX_AMO: false,
+        // For run tests like it's release.
+        IS_RELEASE: true,
     },
 };
 

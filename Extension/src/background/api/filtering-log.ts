@@ -30,15 +30,15 @@ import {
 } from '@adguard/tswebextension';
 
 import { AntiBannerFiltersId } from '../../common/constants';
-import { Log } from '../../common/log';
+import { logger } from '../../common/logger';
 import { translator } from '../../common/translators/translator';
 import { listeners } from '../notifier';
 import { Engine } from '../engine';
 import { settingsStorage } from '../storages';
 import { SettingOption } from '../schema';
+import { TabsApi } from '../../common/api/extension/tabs';
 
 import { UserRulesApi } from './filters';
-import { TabsApi } from './extension/tabs';
 
 export type FilteringEventRuleData = {
     filterId: number,
@@ -143,9 +143,15 @@ export class FilteringLogApi {
         this.openedFilteringLogsPages += 1;
 
         try {
+            Engine.api.setDebugScriptlets(true);
+        } catch (e) {
+            logger.error('Failed to enable `verbose scriptlets logging` option', e);
+        }
+
+        try {
             Engine.api.setCollectHitStats(true);
         } catch (e) {
-            Log.error('Failed to enable `collect hit stats` option', e);
+            logger.error('Failed to enable `collect hit stats` option', e);
         }
     }
 
@@ -160,11 +166,17 @@ export class FilteringLogApi {
                 tabInfo.filteringEvents = [];
             });
 
+            try {
+                Engine.api.setDebugScriptlets(false);
+            } catch (e) {
+                logger.error('Failed to disable `verbose scriptlets logging` option', e);
+            }
+
             if (settingsStorage.get(SettingOption.DisableCollectHits)) {
                 try {
                     Engine.api.setCollectHitStats(false);
                 } catch (e) {
-                    Log.error('Failed to disable `collect hit stats` option', e);
+                    logger.error('Failed to disable `collect hit stats` option', e);
                 }
             }
         }
@@ -330,7 +342,7 @@ export class FilteringLogApi {
      */
     public addEventData(tabId: number, data: FilteringLogEvent): void {
         const tabInfo = this.getFilteringInfoByTabId(tabId);
-        if (!tabInfo || !this.isOpen) {
+        if (!tabInfo || !this.isOpen()) {
             return;
         }
 
@@ -341,6 +353,7 @@ export class FilteringLogApi {
             tabInfo.filteringEvents.splice(1, 1);
         }
 
+        // TODO: Looks like not using. Maybe lost listener in refactoring.
         listeners.notifyListeners(listeners.LogEventAdded, tabInfo, data);
     }
 
@@ -357,7 +370,7 @@ export class FilteringLogApi {
         data: Partial<FilteringLogEvent>,
     ): void {
         const tabInfo = this.getFilteringInfoByTabId(tabId);
-        if (!tabInfo || !this.isOpen) {
+        if (!tabInfo || !this.isOpen()) {
             return;
         }
 
@@ -368,6 +381,7 @@ export class FilteringLogApi {
         if (event) {
             event = Object.assign(event, data);
 
+            // TODO: Looks like not using. Maybe lost listener in refactoring.
             listeners.notifyListeners(listeners.LogEventAdded, tabInfo, event);
         }
     }

@@ -16,6 +16,7 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 import { UserAgent } from '../../../common/user-agent';
+import { RECOMMENDED_TAG_ID } from '../../../common/constants';
 import {
     metadataStorage,
     filterStateStorage,
@@ -32,7 +33,7 @@ import {
     FilterVersionData,
     CustomFilterMetadata,
 } from '../../schema';
-import { Log } from '../../../common/log';
+import { logger } from '../../../common/logger';
 
 import { CommonFilterApi } from './common';
 import { FilterMetadata, FiltersApi } from './main';
@@ -44,6 +45,7 @@ import { FilterUpdateApi } from './update';
 export type CategoriesFilterData = (
     (RegularFilterMetadata | CustomFilterMetadata) &
     // Optional because there is no field 'languages' in CustomFilterMetadata.
+    // TODO: consider removing because RegularFilterMetadata already has 'languages' field.
     { languages?: string[] } &
     FilterStateData &
     FilterVersionData &
@@ -71,8 +73,6 @@ export type CategoriesData = {
  * Class for filter groups management.
  */
 export class Categories {
-    private static RECOMMENDED_TAG_ID = 10;
-
     private static PURPOSE_MOBILE_TAG_ID = 19;
 
     /**
@@ -116,7 +116,7 @@ export class Categories {
      */
     public static async enableGroup(groupId: number, recommendedFiltersIds: number[] = []): Promise<void> {
         if (recommendedFiltersIds.length > 0) {
-            await FiltersApi.loadAndEnableFilters(recommendedFiltersIds);
+            await FiltersApi.loadAndEnableFilters(recommendedFiltersIds, true);
         }
 
         // Always checks updates for enabled filters of the group.
@@ -162,7 +162,7 @@ export class Categories {
      * @returns True, if filter has recommended tag, else returns false.
      */
     private static isRecommendedFilter(filter: FilterMetadata): boolean {
-        return filter.tags.includes(Categories.RECOMMENDED_TAG_ID);
+        return filter.tags.includes(RECOMMENDED_TAG_ID);
     }
 
     /**
@@ -280,20 +280,39 @@ export class Categories {
         const result: CategoriesFilterData[] = [];
 
         filtersMetadata.forEach((filterMetadata) => {
-            const tagsDetails = Categories.getTagsDetails(filterMetadata.tags);
+            const {
+                filterId,
+                tags,
+                version,
+                expires,
+                timeUpdated,
+                diffPath,
+            } = filterMetadata;
+            const tagsDetails = Categories.getTagsDetails(tags);
 
-            const filterState = filterStateStorage.get(filterMetadata.filterId);
-
-            const filterVersion = filterVersionStorage.get(filterMetadata.filterId);
-
+            const filterState = filterStateStorage.get(filterId);
             if (!filterState) {
-                Log.error(`Cannot find filter ${filterMetadata.filterId} state data`);
+                logger.error(`Cannot find filter ${filterId} state data`);
                 return;
             }
 
+            let filterVersion = filterVersionStorage.get(filterId);
             if (!filterVersion) {
-                Log.error(`Cannot find filter ${filterMetadata.filterId} version data`);
-                return;
+                // TODO: remove this hack after we find how to reproduce this issue
+                // Sometimes filter version data might be missing https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2693,
+                // so we set it to values from metadata
+                logger.info(`Cannot find filter ${filterId} version data, restoring it from metadata`);
+                const dayAgoMs = Date.now() - 1000 * 60 * 60 * 24; // 24 hours
+                filterVersion = {
+                    version,
+                    expires,
+                    lastUpdateTime: (new Date(timeUpdated)).getTime(),
+                    // this is set in the past to force update check
+                    lastCheckTime: dayAgoMs,
+                    lastScheduledCheckTime: dayAgoMs,
+                    diffPath,
+                };
+                filterVersionStorage.set(filterId, filterVersion);
             }
 
             result.push({
@@ -321,7 +340,7 @@ export class Categories {
             const groupState = groupStateStorage.get(groupMetadata.groupId);
 
             if (!groupState) {
-                Log.error(`Cannot find group ${groupMetadata.groupId} state data`);
+                logger.error(`Cannot find group ${groupMetadata.groupId} state data`);
                 return;
             }
 

@@ -16,27 +16,26 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 import browser from 'webextension-polyfill';
-import FiltersDownloader from '@adguard/filters-downloader/browser';
+import {
+    FiltersDownloader,
+    DefinedExpressions,
+    type DownloadResult,
+} from '@adguard/filters-downloader/browser';
 
-import { LOCALE_METADATA_FILE_NAME, LOCALE_I18N_METADATA_FILE_NAME } from '../../../../../constants';
+import { LOCAL_METADATA_FILE_NAME, LOCAL_I18N_METADATA_FILE_NAME } from '../../../../../constants';
 import { UserAgent } from '../../../common/user-agent';
 import {
-    I18nMetadata,
-    i18nMetadataValidator,
-    LocalScriptRules,
-    localScriptRulesValidator,
-    Metadata,
+    type Metadata,
+    type I18nMetadata,
+    type LocalScriptRules,
     metadataValidator,
+    i18nMetadataValidator,
+    localScriptRulesValidator,
 } from '../../schema';
+import type { FilterUpdateOptions } from '../filters';
+import { logger } from '../../../common/logger';
 
 import { NetworkSettings } from './settings';
-
-export type NetworkConfiguration = {
-    filtersMetadataUrl?: string,
-    filterRulesUrl?: string,
-    localFiltersFolder?: string,
-    localFilterIds?: number[]
-};
 
 export type ExtensionXMLHttpRequest = XMLHttpRequest & { mozBackgroundRequest: boolean };
 
@@ -51,7 +50,7 @@ export class Network {
     /**
      * FiltersDownloader constants.
      */
-    private filterCompilerConditionsConstants = {
+    private filterCompilerConditionsConstants: DefinedExpressions = {
         adguard: true,
         adguard_ext_chromium: UserAgent.isChromium,
         adguard_ext_firefox: UserAgent.isFirefox,
@@ -66,37 +65,93 @@ export class Network {
     private loadingSubscriptions: Record<string, boolean> = {};
 
     /**
-     * Downloads filter rules by filter ID.
+     * Checks if filter has local copy in the extension resources or not.
      *
-     * @param filterId              Filter identifier.
-     * @param forceRemote           Force download filter rules from remote server.
-     * @param useOptimizedFilters   Download optimized filters flag.
+     * @param filterId Filter id.
+     *
+     * @returns True if filter has local copy, false otherwise.
      */
-    public async downloadFilterRules(
-        filterId: number,
-        forceRemote: boolean,
-        useOptimizedFilters: boolean,
-    ): Promise<string[]> {
-        let url: string;
-
-        if (forceRemote || this.settings.localFilterIds.indexOf(filterId) < 0) {
-            url = this.getUrlForDownloadFilterRules(filterId, useOptimizedFilters);
-        } else {
-            url = browser.runtime.getURL(`${this.settings.localFiltersFolder}/filter_${filterId}.txt`);
-            if (useOptimizedFilters) {
-                url = browser.runtime.getURL(`${this.settings.localFiltersFolder}/filter_mobile_${filterId}.txt`);
-            }
-        }
-
-        return FiltersDownloader.download(url, this.filterCompilerConditionsConstants);
+    public isFilterHasLocalCopy(filterId: number): boolean {
+        return this.settings.localFilterIds.includes(filterId);
     }
 
     /**
-     * Downloads filter rules by url.
+     * Downloads filter rules by filter ID.
+     *
+     * @param filterUpdateOptions Filter update detail.
+     * @param forceRemote Force download filter rules from remote server.
+     * @param useOptimizedFilters Download optimized filters flag.
+     * @param rawFilter Raw filter rules.
+     *
+     * @throws An error if FiltersDownloader.downloadWithRaw() fails.
+     */
+    public async downloadFilterRules(
+        filterUpdateOptions: FilterUpdateOptions,
+        forceRemote: boolean,
+        useOptimizedFilters: boolean,
+        rawFilter?: string,
+    ): Promise<DownloadResult> {
+        let url: string;
+
+        if (!forceRemote && this.settings.localFilterIds.indexOf(filterUpdateOptions.filterId) < 0) {
+            // eslint-disable-next-line max-len
+            throw new Error(`Cannot locally load filter with id ${filterUpdateOptions.filterId} because it is not build in the extension local resources.`);
+        }
+
+        let isLocalFilter = false;
+        if (forceRemote || this.settings.localFilterIds.indexOf(filterUpdateOptions.filterId) < 0) {
+            url = this.getUrlForDownloadFilterRules(filterUpdateOptions.filterId, useOptimizedFilters);
+        } else {
+            // eslint-disable-next-line max-len
+            url = browser.runtime.getURL(`${this.settings.localFiltersFolder}/filter_${filterUpdateOptions.filterId}.txt`);
+            if (useOptimizedFilters) {
+                // eslint-disable-next-line max-len
+                url = browser.runtime.getURL(`${this.settings.localFiltersFolder}/filter_mobile_${filterUpdateOptions.filterId}.txt`);
+            }
+            isLocalFilter = true;
+        }
+
+        // local filters do not support patches, that is why we always download them fully
+        if (isLocalFilter || filterUpdateOptions.ignorePatches || !rawFilter) {
+            const result = await FiltersDownloader.downloadWithRaw(
+                url,
+                {
+                    force: true,
+                    definedExpressions: this.filterCompilerConditionsConstants,
+                    verbose: logger.isVerbose(),
+                    validateChecksum: true,
+                    // use true because we know that our filters have checksums
+                    validateChecksumStrict: true,
+                },
+            );
+            return result;
+        }
+
+        return FiltersDownloader.downloadWithRaw(
+            url,
+            {
+                rawFilter,
+                definedExpressions: this.filterCompilerConditionsConstants,
+                verbose: logger.isVerbose(),
+                validateChecksum: true,
+                // use true because we know that our filters have checksums
+                validateChecksumStrict: true,
+            },
+        );
+    }
+
+    /**
+     * Downloads filter rules by url. Needed for custom filter lists.
      *
      * @param url Subscription url.
+     * @param rawFilter Raw filter rules.
+     * @param force Boolean flag to download filter fully or by patches.
      */
-    public async downloadFilterRulesBySubscriptionUrl(url: string): Promise<string[] | undefined> {
+    public async downloadFilterRulesBySubscriptionUrl(
+        url: string,
+        rawFilter?: string,
+        force?: boolean,
+    ): Promise<DownloadResult | undefined> {
         if (url in this.loadingSubscriptions) {
             return;
         }
@@ -105,16 +160,29 @@ export class Network {
 
         try {
             // TODO: runtime validation
-            const lines = await FiltersDownloader.download(url, this.filterCompilerConditionsConstants);
+            const downloadData = await FiltersDownloader.downloadWithRaw(
+                url,
+                {
+                    definedExpressions: this.filterCompilerConditionsConstants,
+                    force,
+                    rawFilter,
+                    verbose: logger.isVerbose(),
+                    validateChecksum: true,
+                    // use false because we know that custom filters might not have checksums
+                    validateChecksumStrict: false,
+                },
+            );
 
             delete this.loadingSubscriptions[url];
 
-            if (lines[0] && lines[0].indexOf('[') === 0) {
-                // [Adblock Plus 2.0]
-                lines.shift();
+            // Get the first rule to check if it is an adblock agent (like [Adblock Plus 2.0]). If so, ignore it.
+            const firstRule = downloadData.filter[0]?.trim();
+
+            if (firstRule && firstRule.startsWith('[') && firstRule.endsWith(']')) {
+                downloadData.filter.shift();
             }
 
-            return lines;
+            return downloadData;
         } catch (e: unknown) {
             delete this.loadingSubscriptions[url];
             const message = e instanceof Error
@@ -133,7 +201,7 @@ export class Network {
      * @returns Object of {@link Metadata}.
      */
     public async getLocalFiltersMetadata(): Promise<Metadata> {
-        const url = browser.runtime.getURL(`${this.settings.localFiltersFolder}/${LOCALE_METADATA_FILE_NAME}`);
+        const url = browser.runtime.getURL(`${this.settings.localFiltersFolder}/${LOCAL_METADATA_FILE_NAME}`);
 
         let response: ExtensionXMLHttpRequest;
 
@@ -166,7 +234,7 @@ export class Network {
      * @returns Object of {@link I18nMetadata}.
      */
     public async getLocalFiltersI18nMetadata(): Promise<I18nMetadata> {
-        const url = browser.runtime.getURL(`${this.settings.localFiltersFolder}/${LOCALE_I18N_METADATA_FILE_NAME}`);
+        const url = browser.runtime.getURL(`${this.settings.localFiltersFolder}/${LOCAL_I18N_METADATA_FILE_NAME}`);
 
         let response: ExtensionXMLHttpRequest;
 
@@ -324,7 +392,7 @@ export class Network {
      *
      * @returns Url for filter downloading.
      */
-    private getUrlForDownloadFilterRules(filterId: number, useOptimizedFilters: boolean): string {
+    public getUrlForDownloadFilterRules(filterId: number, useOptimizedFilters: boolean): string {
         const url = useOptimizedFilters ? this.settings.optimizedFilterRulesUrl : this.settings.filterRulesUrl;
         return url.replaceAll('{filter_id}', String(filterId));
     }

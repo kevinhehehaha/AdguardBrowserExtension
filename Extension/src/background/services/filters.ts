@@ -16,17 +16,20 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 import {
-    AddAndEnableFilterMessage,
-    DisableFilterMessage,
-    DisableFiltersGroupMessage,
-    EnableFiltersGroupMessage,
     MessageType,
+    type AddAndEnableFilterMessage,
+    type DisableFilterMessage,
+    type DisableFiltersGroupMessage,
+    type EnableFiltersGroupMessage,
+    type SetConsentedFiltersMessage,
+    type GetIsConsentedFilterMessage,
 } from '../../common/messages';
-import { Log } from '../../common/log';
+import { logger } from '../../common/logger';
 import { SettingOption } from '../schema';
 import { messageHandler } from '../message-handler';
 import { Engine } from '../engine';
 import {
+    annoyancesConsent,
     FilterMetadata,
     FiltersApi,
     FilterUpdateApi,
@@ -60,6 +63,8 @@ export class FiltersService {
         messageHandler.addListener(MessageType.DisableFiltersGroup, FiltersService.onGroupDisable);
         messageHandler.addListener(MessageType.CheckFiltersUpdate, FiltersService.manualCheckFiltersUpdate);
         messageHandler.addListener(MessageType.ResetBlockedAdsCount, FiltersService.resetBlockedAdsCount);
+        messageHandler.addListener(MessageType.SetConsentedFilters, FiltersService.setConsentedFilters);
+        messageHandler.addListener(MessageType.GetIsConsentedFilter, FiltersService.getIsConsentedFilter);
 
         contextMenuEvents.addListener(ContextMenuAction.UpdateFilters, FiltersService.manualCheckFiltersUpdate);
 
@@ -83,7 +88,9 @@ export class FiltersService {
     private static onFilterEnable(message: AddAndEnableFilterMessage): number | undefined {
         const { filterId } = message.data;
 
-        FiltersService.enableFilter(filterId);
+        // second arg 'true' is needed to enable not touched group
+        // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2776
+        FiltersService.enableFilter(filterId, true);
 
         const group = Categories.getGroupByFilterId(filterId);
 
@@ -132,7 +139,7 @@ export class FiltersService {
         const group = Categories.getGroupState(groupId);
 
         if (!group) {
-            Log.error(`Cannot find group with ${groupId} id`);
+            logger.error(`Cannot find group with ${groupId} id`);
             return;
         }
 
@@ -167,8 +174,6 @@ export class FiltersService {
     private static async manualCheckFiltersUpdate(): Promise<FilterMetadata[] | undefined> {
         try {
             const updatedFilters = await FilterUpdateApi.autoUpdateFilters(true);
-
-            Engine.debounceUpdate();
 
             toasts.showFiltersUpdatedAlertMessage(true, updatedFilters);
             listeners.notifyListeners(listeners.FiltersUpdateCheckReady, updatedFilters);
@@ -207,6 +212,32 @@ export class FiltersService {
     }
 
     /**
+     * Called on a request to add filter ids to consented filters list.
+     *
+     * @param message Message of {@link SetConsentedFiltersMessage} with filter ids to add.
+     */
+    private static async setConsentedFilters(message: SetConsentedFiltersMessage): Promise<void> {
+        const { filterIds } = message.data;
+
+        await annoyancesConsent.addFilterIds(filterIds);
+    }
+
+    /**
+     * Called on a request to check if filter is consented.
+     *
+     * @param message Message of {@link GetIsConsentedFilterMessage} with filter id to check.
+     *
+     * @returns True if consent is granted for filter, otherwise false.
+     */
+    private static async getIsConsentedFilter(message: GetIsConsentedFilterMessage): Promise<boolean> {
+        const { filterId } = message.data;
+
+        const isConsented = await annoyancesConsent.isConsentedFilter(filterId);
+
+        return isConsented;
+    }
+
+    /**
      * Enables specified group and updates filter engine.
      *
      * On first group activation we provide recommended filters,
@@ -227,9 +258,10 @@ export class FiltersService {
      * If filter group has not been touched before, it will be activated.
      *
      * @param filterId Id of filter.
+     * @param shouldEnableGroup Flag for enabling the filter group if it has not been touched before.
      */
-    private static async enableFilter(filterId: number): Promise<void> {
-        await FiltersApi.loadAndEnableFilters([filterId], true);
+    private static async enableFilter(filterId: number, shouldEnableGroup = false): Promise<void> {
+        await FiltersApi.loadAndEnableFilters([filterId], true, shouldEnableGroup);
         Engine.debounceUpdate();
     }
 }

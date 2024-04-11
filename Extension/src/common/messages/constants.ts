@@ -104,6 +104,8 @@ export enum MessageType {
   ShowAlertPopup = 'showAlertPopup',
   ShowVersionUpdatedPopup = 'showVersionUpdatedPopup',
   UpdateListeners = 'updateListeners',
+  SetConsentedFilters = 'setConsentedFilters',
+  GetIsConsentedFilter = 'getIsConsentedFilter',
 }
 
 export type ApplySettingsJsonMessage = {
@@ -386,6 +388,20 @@ export type DisableFiltersGroupMessage = {
   }
 };
 
+export type SetConsentedFiltersMessage = {
+  type: MessageType.SetConsentedFilters,
+  data: {
+    filterIds: number[],
+  }
+};
+
+export type GetIsConsentedFilterMessage = {
+  type: MessageType.GetIsConsentedFilter,
+  data: {
+    filterId: number,
+  }
+};
+
 export type OpenSafebrowsingTrustedMessage = {
   type: MessageType.OpenSafebrowsingTrusted,
   data: {
@@ -435,6 +451,7 @@ export type ShowVersionUpdatedPopupMessage = {
     offerDesc: string,
     offerButtonText: string,
     offerButtonHref: string,
+    offerBgImage: string,
     disableNotificationText: string,
     alertStyles: string,
     iframeStyles: string,

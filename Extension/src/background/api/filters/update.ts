@@ -22,11 +22,33 @@ import {
     CustomFilterMetadata,
 } from '../../schema';
 import { DEFAULT_FILTERS_UPDATE_PERIOD } from '../../../common/settings';
-import { Log } from '../../../common/log';
+import { logger } from '../../../common/logger';
+import { FiltersUpdateTime } from '../../../common/constants';
+import { Engine } from '../../engine';
+import { getErrorMessage } from '../../../common/error';
 
 import { FilterMetadata, FiltersApi } from './main';
 import { CustomFilterApi } from './custom';
 import { CommonFilterApi } from './common';
+
+/**
+ * Filter update detail.
+ */
+export type FilterUpdateOptions = {
+    /**
+     * Filter identifier.
+     */
+    filterId: number,
+    /**
+     * Should we update filters fully without patch updates or load patches to filters.
+     */
+    ignorePatches: boolean,
+};
+
+/**
+ * List of filter update details.
+ */
+type FilterUpdateOptionsList = FilterUpdateOptions[];
 
 /**
  * API for manual and automatic (by period) filter rules updates.
@@ -49,16 +71,18 @@ export class FilterUpdateApi {
      * a filter is enabled from the Stealth menu);
      * - when the language filter is automatically turned on.
      *
-     * @param filtersIds List of filters ids to check.
+     * @param filterIds List of filter ids to check.
      *
      * @returns List of metadata for updated filters.
      */
-    public static async checkForFiltersUpdates(filtersIds: number[]): Promise<FilterMetadata[]> {
-        const filtersToCheck = FilterUpdateApi.selectFiltersIdsToUpdate(filtersIds);
+    public static async checkForFiltersUpdates(filterIds: number[]): Promise<FilterMetadata[]> {
+        const filtersToCheck = FilterUpdateApi.selectFiltersIdsToUpdate(filterIds);
 
-        const updatedFilters = await FilterUpdateApi.updateFilters(filtersToCheck);
+        // We update filters without patches when we enable groups.
+        const filterDetails = filtersToCheck.map((id) => ({ filterId: id, ignorePatches: true }));
 
-        filterVersionStorage.refreshLastCheckTime(filtersToCheck);
+        const updatedFilters = await FilterUpdateApi.updateFilters(filterDetails);
+        filterVersionStorage.refreshLastCheckTime(filterDetails);
 
         return updatedFilters;
     }
@@ -88,8 +112,13 @@ export class FilterUpdateApi {
      * @param forceUpdate Is it a force manual check by user action or first run
      * or not.
      */
-    public static async autoUpdateFilters(forceUpdate: boolean = false): Promise<FilterMetadata[]> {
-        // If filtering is disabled and it is not a forced update, it does nothing.
+    public static async autoUpdateFilters(forceUpdate = false): Promise<FilterMetadata[]> {
+        const startUpdateLogMessage = forceUpdate
+            ? 'Update filters forced by user.'
+            : 'Update filters by scheduler.';
+        logger.info(startUpdateLogMessage);
+
+        // If filtering is disabled, and it is not a forced update, it does nothing.
         const filteringDisabled = settingsStorage.get(SettingOption.DisableFiltering);
         if (filteringDisabled && !forceUpdate) {
             return [];
@@ -97,7 +126,7 @@ export class FilterUpdateApi {
 
         const updatePeriod = settingsStorage.get(SettingOption.FiltersUpdatePeriod);
         // Auto update disabled.
-        if (updatePeriod === 0 && !forceUpdate) {
+        if (updatePeriod === FiltersUpdateTime.Disabled && !forceUpdate) {
             return [];
         }
 
@@ -106,17 +135,57 @@ export class FilterUpdateApi {
         const installedAndEnabledFilters = FiltersApi.getInstalledAndEnabledFiltersIds();
 
         // If it is a force check - updates all installed and enabled filters.
-        let filtersIdsToUpdate = installedAndEnabledFilters;
+        let filterUpdateDetailsToUpdate = installedAndEnabledFilters.map(
+            id => ({ filterId: id, ignorePatches: forceUpdate }),
+        );
 
         // If not a force check - updates only outdated filters.
         if (!forceUpdate) {
-            filtersIdsToUpdate = FilterUpdateApi.selectExpiredFilters(updatePeriod, installedAndEnabledFilters);
+            // Select filters with diff paths and mark them for no force update
+            const filtersToPatchUpdate = FilterUpdateApi
+                .selectFiltersToPatchUpdate(filterUpdateDetailsToUpdate)
+                .map(filterData => ({ ...filterData, force: false }));
+
+            /**
+             * Select filters for a forced update and mark them accordingly.
+             *
+             * Filters with diff path must be also full updated from time to time.
+             * Full update period for such full (forced) update is determined by FiltersUpdateTime,
+             * which is set in extension settings.
+             */
+            const filtersToFullUpdate = FilterUpdateApi.selectFiltersToFullUpdate(
+                filterUpdateDetailsToUpdate,
+                updatePeriod,
+            ).map(filter => ({ ...filter, force: true }));
+
+            // Combine both arrays
+            const combinedFilters = [...filtersToPatchUpdate, ...filtersToFullUpdate];
+
+            const uniqueFiltersMap = new Map();
+
+            combinedFilters.forEach(filter => {
+                if (!uniqueFiltersMap.has(filter.filterId) || filter.ignorePatches) {
+                    uniqueFiltersMap.set(filter.filterId, filter);
+                }
+            });
+
+            filterUpdateDetailsToUpdate = Array.from(uniqueFiltersMap.values());
         }
 
-        const updatedFilters = await FilterUpdateApi.updateFilters(filtersIdsToUpdate);
+        const updatedFilters = await FilterUpdateApi.updateFilters(filterUpdateDetailsToUpdate);
 
-        // Updates last check time of all installed and enabled filters.
-        filterVersionStorage.refreshLastCheckTime(filtersIdsToUpdate);
+        // Updates last check time of all installed and enabled filters,
+        // which where updated with force
+        filterVersionStorage.refreshLastCheckTime(
+            filterUpdateDetailsToUpdate
+                .filter(filterUpdateOptions => filterUpdateOptions.ignorePatches)
+                .map(({ filterId }) => filterId),
+        );
+
+        // If some filters were updated, then it is time to update the engine.
+        if (updatedFilters.length > 0) {
+            Engine.debounceUpdate();
+        }
 
         return updatedFilters;
     }
@@ -125,29 +194,44 @@ export class FilterUpdateApi {
      * Updates the metadata of all filters and updates the filter contents from
      * the provided list of identifiers.
      *
-     * @param filtersIds List of filters ids to update.
+     * @param filterUpdateOptionsList List of filters ids to update.
      *
      * @returns Promise with a list of updated {@link FilterMetadata filters' metadata}.
      */
-    private static async updateFilters(filtersIds: number[]): Promise<FilterMetadata[]> {
+    private static async updateFilters(
+        filterUpdateOptionsList: FilterUpdateOptionsList,
+    ): Promise<FilterMetadata[]> {
         /**
          * Reload common filters metadata from backend for correct
          * version matching on update check.
          * We do not update metadata on each check if there are no filters or only custom filters.
          */
-        if (filtersIds.some((id) => CommonFilterApi.isCommonFilter(id))) {
-            await FiltersApi.loadMetadata(true);
+        const shouldLoadMetadata = filterUpdateOptionsList.some(filterUpdateOptions => {
+            return filterUpdateOptions.ignorePatches && CommonFilterApi.isCommonFilter(filterUpdateOptions.filterId);
+        });
+
+        if (shouldLoadMetadata) {
+            try {
+                await FiltersApi.updateMetadata();
+            } catch (e) {
+                // No need to throw an error here, because we still can load
+                // filters using the old metadata: checking metadata needed to
+                // check for updates - without fresh metadata we still can load
+                // newest filter, checking it's version will be against the old,
+                // local metadata, which is possible outdated.
+                logger.error('Failed to update metadata due to an error:', getErrorMessage(e));
+            }
         }
 
         const updatedFiltersMetadata: FilterMetadata[] = [];
 
-        const updateTasks = filtersIds.map(async (filterId) => {
+        const updateTasks = filterUpdateOptionsList.map(async (filterData) => {
             let filterMetadata: CustomFilterMetadata | RegularFilterMetadata | null;
 
-            if (CustomFilterApi.isCustomFilter(filterId)) {
-                filterMetadata = await CustomFilterApi.updateFilter(filterId);
+            if (CustomFilterApi.isCustomFilter(filterData.filterId)) {
+                filterMetadata = await CustomFilterApi.updateFilter(filterData);
             } else {
-                filterMetadata = await CommonFilterApi.updateFilter(filterId);
+                filterMetadata = await CommonFilterApi.updateFilter(filterData);
             }
 
             if (filterMetadata) {
@@ -160,7 +244,7 @@ export class FilterUpdateApi {
         // Handles errors
         promises.forEach((promise) => {
             if (promise.status === 'rejected') {
-                Log.error('Cannot update filter due to: ', promise.reason);
+                logger.error('Cannot update filter due to: ', promise.reason);
             }
         });
 
@@ -172,19 +256,19 @@ export class FilterUpdateApi {
      * {@link RECENTLY_CHECKED_FILTER_TIMEOUT_MS recently} updated (added,
      * enabled or updated by the scheduler) and those that are custom filters.
      *
-     * @param filtersIds List of filter ids.
+     * @param filterIds List of filter ids.
      *
      * @returns List of filter ids to update.
      */
-    private static selectFiltersIdsToUpdate(filtersIds: number[]): number[] {
-        const filtersVersions = filterVersionStorage.getData();
+    private static selectFiltersIdsToUpdate(filterIds: number[]): number[] {
+        const filterVersions = filterVersionStorage.getData();
 
-        return filtersIds.filter((id: number) => {
+        return filterIds.filter((id: number) => {
             // Always check for updates for custom filters
             const isCustom = CustomFilterApi.isCustomFilter(Number(id));
 
             // Select only not recently checked filters
-            const filterVersion = filtersVersions[Number(id)];
+            const filterVersion = filterVersions[Number(id)];
             const outdated = filterVersion !== undefined
                 ? Date.now() - filterVersion.lastCheckTime > FilterUpdateApi.RECENTLY_CHECKED_FILTER_TIMEOUT_MS
                 : true;
@@ -194,35 +278,72 @@ export class FilterUpdateApi {
     }
 
     /**
-     * Selects only outdated filters from the provided filter list, based on the
-     * provided filter update period from the settings.
+     * Selects filters to update with patches. Such filters should
+     * 1. Have `diffPath`
+     * 2. Not have `shouldWaitFullUpdate` flag which means that patch update failed previously.
      *
+     * @param filterUpdateOptionsList Filter update details.
+     *
+     * @returns List with filter update details, which have diff path.
+     */
+    private static selectFiltersToPatchUpdate(
+        filterUpdateOptionsList: FilterUpdateOptionsList,
+    ): FilterUpdateOptionsList {
+        const filterVersions = filterVersionStorage.getData();
+
+        return filterUpdateOptionsList
+            .filter((filterData) => {
+                const filterVersion = filterVersions[filterData.filterId];
+                // we do not check here expires, since @adguard/filters-downloader does it.
+                return filterVersion?.diffPath
+                    // filter may have diffPath but if patch update failed previously,
+                    // we should not try to update it with patches again to avoid continuous failures of patch requests
+                    // and wait until full update
+                    // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2717
+                    && !filterVersion?.shouldWaitFullUpdate;
+            })
+            .map(({ filterId }) => ({ filterId, ignorePatches: false }));
+    }
+
+    /**
+     * Selects outdated filters from the provided filter list for a full update.
+     * The selecting is based on the provided filter update period from the settings.
+     *
+     * @param filterUpdateOptionsList List of filter update details.
      * @param updatePeriod Period of checking updates in ms.
-     * @param filterIds List of filter ids.
      *
      * @returns List of outdated filter ids.
      */
-    private static selectExpiredFilters(updatePeriod: number, filterIds: number[]): number[] {
-        const filtersVersions = filterVersionStorage.getData();
+    private static selectFiltersToFullUpdate(
+        filterUpdateOptionsList: FilterUpdateOptionsList,
+        updatePeriod: number,
+    ): FilterUpdateOptionsList {
+        const filterVersions = filterVersionStorage.getData();
 
-        return filterIds.filter((id: number) => {
-            const filterVersion = filtersVersions[id];
+        return filterUpdateOptionsList.filter((data) => {
+            const filterVersion = filterVersions[data.filterId];
+
             if (!filterVersion) {
-                return false;
+                return true;
             }
 
             const { lastCheckTime, expires } = filterVersion;
 
-            // By default, checks the expires field for each filter.
+            // By default, checks the "expires" field for each filter.
             if (updatePeriod === DEFAULT_FILTERS_UPDATE_PERIOD) {
                 // If it is time to check the update, adds it to the array.
-                // NOTE: expires in seconds.
+                // IMPORTANT: "expires" in filter is specified in SECONDS.
                 return lastCheckTime + expires * 1000 <= Date.now();
             }
 
             // Check, if the renewal period of each filter has passed.
             // If it is time to check the renewal, add to the array.
             return lastCheckTime + updatePeriod <= Date.now();
-        });
+        }).map(({ filterId }) => ({ filterId, ignorePatches: true }));
     }
 }
+
+// TODO remove later
+// This method is exposed for the testing purposes.
+// @ts-ignore
+window.autoUpdate = FilterUpdateApi.autoUpdateFilters;

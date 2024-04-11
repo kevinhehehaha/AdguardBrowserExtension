@@ -17,13 +17,15 @@
  */
 
 // replace unsupported fetch API by xhr requests
+import { TextEncoder, TextDecoder } from 'util';
+
 import 'whatwg-fetch';
 import escape from 'css.escape';
 import mockBrowser from 'sinon-chrome';
-import { DebouncedFunc } from 'lodash';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import chrome from 'sinon-chrome/extensions';
+import type { DebouncedFunc } from 'lodash-es';
 
 // After mocked user-agent, we can import all other mocks
 // eslint-disable-next-line import/first
@@ -35,6 +37,8 @@ import {
 
 // set missing CSS.escape polyfill for test env
 global.CSS.escape = escape;
+
+Object.assign(global, { TextDecoder, TextEncoder });
 
 /**
  * sinon-chrome does declare a browser.runtime.id property, but its value is null, which caused the duck-typing to fail.
@@ -62,15 +66,15 @@ jest.mock('nanoid', () => ({
 }));
 
 // Mock log to hide all logger message
-jest.mock('./Extension/src/common/log.ts');
+jest.mock('./Extension/src/common/logger.ts');
 
 jest.mock('@adguard/tswebextension', () => ({
     ...(jest.requireActual('@adguard/tswebextension')),
     TsWebExtension: MockedTsWebExtension,
 }));
 
-jest.mock('lodash', () => ({
-    ...jest.requireActual('lodash'),
+jest.mock('lodash-es', () => ({
+    ...jest.requireActual('lodash-es'),
     debounce: ((func: (...args: unknown[]) => unknown) => func as DebouncedFunc<(...args: unknown[]) => unknown>),
 }));
 

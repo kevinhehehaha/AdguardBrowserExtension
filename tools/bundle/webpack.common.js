@@ -50,7 +50,6 @@ import {
     ASSISTANT_INJECT_OUTPUT,
     TSURLFILTER_VENDOR_OUTPUT,
     TSWEBEXTENSION_VENDOR_OUTPUT,
-    LODASH_VENDOR_OUTPUT,
 } from '../../constants';
 
 const config = getEnvConf(process.env.BUILD_ENV);
@@ -92,7 +91,6 @@ export const genCommonConfig = (browserConfig) => {
             [BACKGROUND_OUTPUT]: {
                 import: BACKGROUND_PATH,
                 dependOn: [
-                    LODASH_VENDOR_OUTPUT,
                     TSURLFILTER_VENDOR_OUTPUT,
                     TSWEBEXTENSION_VENDOR_OUTPUT,
                 ],
@@ -100,7 +98,6 @@ export const genCommonConfig = (browserConfig) => {
             [OPTIONS_OUTPUT]: {
                 import: OPTIONS_PATH,
                 dependOn: [
-                    LODASH_VENDOR_OUTPUT,
                     REACT_VENDOR_OUTPUT,
                     MOBX_VENDOR_OUTPUT,
                     XSTATE_VENDOR_OUTPUT,
@@ -173,13 +170,11 @@ export const genCommonConfig = (browserConfig) => {
                 import: EDITOR_PATH,
                 dependOn: [
                     REACT_VENDOR_OUTPUT,
-                    TSURLFILTER_VENDOR_OUTPUT,
                 ],
             },
             [REACT_VENDOR_OUTPUT]: ['react', 'react-dom'],
             [MOBX_VENDOR_OUTPUT]: ['mobx'],
             [XSTATE_VENDOR_OUTPUT]: ['xstate'],
-            [LODASH_VENDOR_OUTPUT]: ['lodash'],
             [TSURLFILTER_VENDOR_OUTPUT]: ['@adguard/tsurlfilter'],
             [TSWEBEXTENSION_VENDOR_OUTPUT]: {
                 import: '@adguard/tswebextension',
@@ -193,7 +188,11 @@ export const genCommonConfig = (browserConfig) => {
             filename: '[name].js',
         },
         resolve: {
-            extensions: ['*', '.js', '.jsx', '.ts', '.tsx'],
+            fallback: {
+                'crypto': require.resolve('crypto-browserify'),
+                'stream': require.resolve('stream-browserify'),
+            },
+            extensions: ['.*', '.js', '.jsx', '.ts', '.tsx'],
             symlinks: false,
         },
         module: {
@@ -231,7 +230,7 @@ export const genCommonConfig = (browserConfig) => {
                 },
                 {
                     test: /\.(js|ts)x?$/,
-                    exclude: /node_modules/,
+                    exclude: /node_modules\/(?!@adguard\/tswebextension)/,
                     use: [
                         {
                             loader: 'swc-loader',
@@ -280,7 +279,6 @@ export const genCommonConfig = (browserConfig) => {
                 },
                 filename: `${BACKGROUND_OUTPUT}.html`,
                 chunks: [
-                    LODASH_VENDOR_OUTPUT,
                     TSURLFILTER_VENDOR_OUTPUT,
                     TSWEBEXTENSION_VENDOR_OUTPUT,
                     BACKGROUND_OUTPUT,
@@ -291,7 +289,6 @@ export const genCommonConfig = (browserConfig) => {
                 template: path.join(OPTIONS_PATH, 'index.html'),
                 filename: `${OPTIONS_OUTPUT}.html`,
                 chunks: [
-                    LODASH_VENDOR_OUTPUT,
                     TSURLFILTER_VENDOR_OUTPUT,
                     REACT_VENDOR_OUTPUT,
                     MOBX_VENDOR_OUTPUT,
@@ -330,7 +327,6 @@ export const genCommonConfig = (browserConfig) => {
                 template: path.join(FULLSCREEN_USER_RULES_PATH, 'index.html'),
                 filename: `${FULLSCREEN_USER_RULES_OUTPUT}.html`,
                 chunks: [
-                    TSURLFILTER_VENDOR_OUTPUT,
                     REACT_VENDOR_OUTPUT,
                     MOBX_VENDOR_OUTPUT,
                     XSTATE_VENDOR_OUTPUT,
@@ -372,10 +368,12 @@ export const genCommonConfig = (browserConfig) => {
                     },
                 ],
             }),
-            // We are doing stricter JS rule checking for Firefox AMO, so we
-            // need to determine if the Firefox browser is AMO or not.
             new DefinePlugin({
+                // We are doing stricter JS rule checking for Firefox AMO, so we
+                // need to determine if the Firefox browser is AMO or not.
                 IS_FIREFOX_AMO: browserConfig.browser === BROWSERS.FIREFOX_AMO,
+                IS_RELEASE: process.env.BUILD_ENV === ENVS.RELEASE,
+                IS_BETA: process.env.BUILD_ENV === ENVS.BETA,
             }),
         ],
     };

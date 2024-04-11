@@ -19,6 +19,7 @@ import browser, { Runtime, Windows } from 'webextension-polyfill';
 
 import { UserAgent } from '../../../common/user-agent';
 import { AddFilteringSubscriptionMessage, ScriptletCloseWindowMessage } from '../../../common/messages';
+import { getErrorMessage } from '../../../common/error';
 import {
     Forward,
     ForwardAction,
@@ -31,7 +32,7 @@ import { storage, settingsStorage } from '../../storages';
 import { SettingOption } from '../../schema';
 import { BrowserUtils } from '../../utils/browser-utils';
 import { AntiBannerFiltersId, FILTERING_LOG_WINDOW_STATE } from '../../../common/constants';
-import { TabsApi } from '../extension';
+import { WindowsApi, TabsApi } from '../../../common/api/extension';
 import { Prefs } from '../../prefs';
 import {
     FILTERING_LOG_OUTPUT,
@@ -128,7 +129,7 @@ export class PagesApi {
 
         // Open a new tab without type to get it as a new tab in a new window
         // with the ability to move and attach it to the current browser window.
-        await browser.windows.create({
+        await WindowsApi.create({
             url,
             focused: true,
             ...PagesApi.defaultPopupWindowState,
@@ -162,16 +163,18 @@ export class PagesApi {
                 ? JSON.parse(windowStateString)
                 : PagesApi.defaultPopupWindowState;
 
-            await browser.windows.create({
+            await WindowsApi.create({
                 url,
                 type: 'popup',
                 ...options,
             });
         } catch (e) {
-            // Reopen tab with default pos if it was closed too far beyond the screen
-            // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2100
-            if ((e as Error).message.includes('Invalid value for bounds.')) {
-                await browser.windows.create({
+            const message = getErrorMessage(e);
+
+            if (message.includes('Invalid value for bounds.')) {
+                // Reopen tab with default pos if it was closed too far beyond the screen
+                // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2100
+                await WindowsApi.create({
                     url,
                     type: 'popup',
                     ...PagesApi.defaultPopupWindowState,
@@ -395,7 +398,7 @@ export class PagesApi {
     /**
      * Returns stealth url params.
      *
-     * @param filterIds List of filters id.
+     * @param filterIds List of filter id.
      * @returns Stealth url params record.
      */
     private static getStealthParams(filterIds: number[]): { [key: string]: string } {
@@ -461,8 +464,12 @@ export class PagesApi {
             stealthOptionsEntries.push([queryKey, option]);
         });
 
-        // TODO: Check, maybe obsoleted because we don't have option 'strip url'
-        // in the Stealth Mode options.
+        // https://github.com/AdguardTeam/AdguardBrowserExtension/issues/2721
+        const isBlockTrackersEnabled = filterIds.includes(AntiBannerFiltersId.TrackingFilterId);
+        if (isBlockTrackersEnabled) {
+            stealthOptionsEntries.push(['stealth.block_trackers', 'true']);
+        }
+
         const isRemoveUrlParamsEnabled = filterIds.includes(AntiBannerFiltersId.UrlTrackingFilterId);
         if (isRemoveUrlParamsEnabled) {
             stealthOptionsEntries.push(['stealth.strip_url', 'true']);

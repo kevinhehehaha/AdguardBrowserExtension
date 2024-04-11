@@ -24,8 +24,7 @@ import {
     computed,
     runInAction,
 } from 'mobx';
-import find from 'lodash/find';
-import truncate from 'lodash/truncate';
+import { find, truncate } from 'lodash-es';
 
 import { ContentType as RequestType } from '@adguard/tswebextension';
 
@@ -422,7 +421,7 @@ class LogStore {
                     && !filteringEvent.removeParam
                     && !filteringEvent.removeHeader);
             const isModified = !isAllowlisted
-                && (filteringEvent.requestRule?.isModifyingCookieRule
+                && (filteringEvent.isModifyingCookieRule
                     || filteringEvent.requestRule?.cssRule
                     || filteringEvent.requestRule?.scriptRule
                     || filteringEvent.requestRule?.cspRule
