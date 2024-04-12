@@ -54,6 +54,33 @@ export class Storage implements StorageInterface<string, unknown, 'async'> {
     public async remove(key: string): Promise<void> {
         await this.storage.remove(key);
     }
+
+    /**
+     * Sets multiple key-value pairs in the storage.
+     *
+     * @param data The key-value pairs to set.
+     *
+     * @returns True if all operations were successful, false otherwise.
+     *
+     * @example
+     * ```ts
+     * const storage = new Storage();
+     * await storage.setMultiple({
+     *    key1: 'value1',
+     *    key2: 'value2',
+     * });
+     * ```
+     */
+    // TODO: Implement some kind of transaction to ensure atomicity, if possible
+    // Note: We only use this method for Firefox if "Never Remember History" is enabled
+    public async setMultiple(data: Record<string, unknown>): Promise<boolean> {
+        try {
+            await this.storage.set(data);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
 }
 
 export const storage = new Storage();

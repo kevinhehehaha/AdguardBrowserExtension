@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `@adguard/logger` for logging messages.
+- `HybridStorage` for storing data via IndexedDB with fallback to `chrome.storage.local`.
 
 ### Changed
 - Raw filters are stored as strings.
