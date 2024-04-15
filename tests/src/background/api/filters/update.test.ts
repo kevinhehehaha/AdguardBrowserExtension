@@ -281,7 +281,7 @@ describe('Filter Update API should', () => {
             jest.spyOn(FiltersDownloader, 'downloadWithRaw')
                 .mockImplementation(() => Promise.resolve({
                     filter: fakeFilterV1.split('\n'),
-                    rawFilter: fakeFilterV1.split('\n'),
+                    rawFilter: fakeFilterV1,
                 }));
 
             await FiltersApi.loadAndEnableFilters([filterId]);
@@ -360,7 +360,7 @@ describe('Filter Update API should', () => {
             jest.spyOn(FiltersDownloader, 'downloadWithRaw')
                 .mockImplementation(() => Promise.resolve({
                     filter: fakeFilterV4WithDiffPath.split('\n'),
-                    rawFilter: fakeFilterV4WithDiffPath.split('\n'),
+                    rawFilter: fakeFilterV4WithDiffPath,
                 }));
 
             // Trigger full (force) filter update on filter load
@@ -370,12 +370,14 @@ describe('Filter Update API should', () => {
                 1,
                 'chrome-extension://test/filters/filter_1.txt',
                 {
-                    force: true,
                     definedExpressions,
+                    force: true,
+                    validateChecksum: true,
+                    validateChecksumStrict: true,
                 },
             );
             expect(await FiltersStorage.get(1)).toEqual(fakeFilterV4WithDiffPath.split('\n'));
-            expect(await RawFiltersStorage.get(1)).toEqual(fakeFilterV4WithDiffPath.split('\n'));
+            expect(await RawFiltersStorage.get(1)).toEqual(fakeFilterV4WithDiffPath);
 
             // Auto update filter to get a diff patch
             await FilterUpdateApi.autoUpdateFilters(false);
@@ -383,8 +385,10 @@ describe('Filter Update API should', () => {
                 2,
                 'https://filters.adtidy.org/extension/chromium/filters/1.txt',
                 {
-                    definedExpressions,
                     rawFilter: fakeFilterV4WithDiffPath,
+                    definedExpressions,
+                    validateChecksum: true,
+                    validateChecksumStrict: true,
                 },
             );
 
@@ -401,6 +405,8 @@ describe('Filter Update API should', () => {
                 {
                     force: true,
                     definedExpressions,
+                    validateChecksum: true,
+                    validateChecksumStrict: true,
                 },
             );
 
@@ -419,6 +425,8 @@ describe('Filter Update API should', () => {
                 {
                     definedExpressions,
                     rawFilter: fakeFilterV4WithDiffPath,
+                    validateChecksum: true,
+                    validateChecksumStrict: true,
                 },
             );
 
