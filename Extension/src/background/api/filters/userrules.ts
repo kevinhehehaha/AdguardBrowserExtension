@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
-import { RuleSyntaxUtils, RuleConverter } from '@adguard/tsurlfilter';
+import { RuleSyntaxUtils } from '@adguard/tsurlfilter';
 
 import { logger } from '../../../common/logger';
 import { AntiBannerFiltersId } from '../../../common/constants';
@@ -25,7 +25,6 @@ import {
     FiltersStorage,
     settingsStorage,
     editorStorage,
-    ruleConversionStorage,
 } from '../../storages';
 
 /**
@@ -93,6 +92,13 @@ export class UserRulesApi {
     }
 
     /**
+     * Returns original rules from user list.
+     */
+    public static async getOriginalUserRules(): Promise<string[]> {
+        return FiltersStorage.getOriginalUserRules();
+    }
+
+    /**
      * Adds rule to user list.
      *
      * @param rule Rule text.
@@ -154,51 +160,5 @@ export class UserRulesApi {
      */
     public static setEditorStorageData(data: string): void {
         editorStorage.set(data);
-    }
-
-    /**
-     * Converts rules text lines with conversion map.
-     *
-     * @param rules List of rule strings.
-     *
-     * @returns List of converted rule strings.
-     */
-    public static convertRules(rules: string[]): string[] {
-        ruleConversionStorage.clear();
-
-        const result: string[] = [];
-
-        rules.forEach((line) => {
-            let converted: string[] = [];
-            try {
-                converted = RuleConverter.convertRule(line);
-            } catch (e: unknown) {
-                logger.info(`Error converting rule ${line}, due to: `, e);
-            }
-            result.push(...converted);
-
-            if (converted.length > 0) {
-                if (converted.length > 1 || converted[0] !== line) {
-                    // Fill the map only for converted rules
-                    converted.forEach((x) => {
-                        ruleConversionStorage.set(x, line);
-                    });
-                }
-            }
-        });
-
-        logger.debug(`Converted ${rules.length} rules to ${result.length} for user filter`);
-
-        return result;
-    }
-
-    /**
-     * Returns source rule text if the rule has been converted.
-     *
-     * @param rule Converted rule text.
-     * @returns Source rule text, if exist, else undefined.
-     */
-    public static getSourceRule(rule: string): string | undefined {
-        return ruleConversionStorage.get(rule);
     }
 }

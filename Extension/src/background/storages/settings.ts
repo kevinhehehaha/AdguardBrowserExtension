@@ -21,7 +21,7 @@ import { ADGUARD_SETTINGS_KEY } from '../../common/constants';
 import { StorageInterface } from '../../common/storage';
 import { Settings, SettingOption } from '../schema';
 
-import { storage } from './main';
+import { storage } from './shared-instances';
 
 /**
  * Storage for app settings.

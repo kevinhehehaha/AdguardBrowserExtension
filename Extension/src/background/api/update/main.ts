@@ -19,11 +19,20 @@ import zod from 'zod';
 
 import { logger } from '../../../common/logger';
 import { getErrorMessage } from '../../../common/error';
-import { SbCache, storage } from '../../storages';
+import {
+    RAW_FILTER_KEY_PREFIX,
+    FILTER_KEY_PREFIX,
+    FiltersStorage,
+    SbCache,
+    hybridStorage,
+    storage,
+    RawFiltersStorage,
+} from '../../storages';
 import {
     ADGUARD_SETTINGS_KEY,
     APP_VERSION_KEY,
     CLIENT_ID_KEY,
+    NEWLINE_CHAR_REGEX,
     SCHEMA_VERSION_KEY,
 } from '../../../common/constants';
 import {
@@ -45,6 +54,7 @@ export class UpdateApi {
         '0': UpdateApi.migrateFromV0toV1,
         '1': UpdateApi.migrateFromV1toV2,
         '2': UpdateApi.migrateFromV2toV3,
+        '3': UpdateApi.migrateFromV3toV4,
     };
 
     /**
@@ -128,6 +138,86 @@ export class UpdateApi {
 
             throw new Error(errMessage, { cause: e });
         }
+    }
+
+    /**
+     * Run data migration from schema v3 to schema v4.
+     */
+    private static async migrateFromV3toV4(): Promise<void> {
+        // Get all entries from the `browser.storage.local`.
+        const entries = await storage.entries();
+
+        // Find all keys that are related to filters.
+        const keys = Object.keys(entries);
+        const rawFilterKeys = keys.filter((key) => key.startsWith(RAW_FILTER_KEY_PREFIX));
+        const filterKeys = keys.filter((key) => key.startsWith(FILTER_KEY_PREFIX));
+
+        // Check if there are no filters to migrate.
+        if (rawFilterKeys.length === 0 && filterKeys.length === 0) {
+            logger.debug('No filters to migrate from storage to hybrid storage');
+            return;
+        }
+
+        // Prepare data to migrate.
+        const migratedData: Record<string, string> = {};
+
+        // Migrate filters.
+        filterKeys.forEach((key) => {
+            const filterId = FiltersStorage.extractFilterIdFromFilterKey(key);
+            if (filterId === null) {
+                logger.debug(`Failed to extract filter ID from the key: ${key}, skipping`);
+                return;
+            }
+
+            const filterSchema = zod.union([zod.string(), zod.array(zod.string())]);
+            const filterParsingResult = filterSchema.safeParse(entries[key]);
+
+            if (!filterParsingResult.success) {
+                logger.debug(
+                    // eslint-disable-next-line max-len
+                    `Failed to parse data from filter ID ${filterId} from the old storage: ${getErrorMessage(filterParsingResult.error)}`,
+                );
+                return;
+            }
+
+            const lines = Array.isArray(filterParsingResult.data)
+                ? filterParsingResult.data
+                : filterParsingResult.data.split(NEWLINE_CHAR_REGEX);
+
+            Object.assign(migratedData, FiltersStorage.getDataToSet(filterId, lines));
+        });
+
+        // Migrate raw filters.
+        rawFilterKeys.forEach((key) => {
+            const filterId = RawFiltersStorage.extractFilterIdFromFilterKey(key);
+            if (filterId === null) {
+                logger.debug(`Failed to extract raw filter ID from the key: ${key}, skipping`);
+                return;
+            }
+
+            const filterParsingResult = zod.string().safeParse(entries[key]);
+
+            if (!filterParsingResult.success) {
+                logger.debug(
+                    // eslint-disable-next-line max-len
+                    `Failed to parse data from raw filter ID ${filterId} from the old storage: ${getErrorMessage(filterParsingResult.error)}`,
+                );
+                return;
+            }
+
+            migratedData[key] = filterParsingResult.data;
+        });
+
+        // Save migrated data to the hybrid storage with a single transaction.
+        const transactionResult = await hybridStorage.setMultiple(migratedData);
+        if (!transactionResult) {
+            throw new Error('Failed to migrate filters from storage to hybrid storage, transaction failed');
+        }
+
+        // Delete filters from the `browser.storage.local` after successful migration.
+        await storage.removeMultiple([...rawFilterKeys, ...filterKeys]);
+
+        logger.debug('Filters successfully migrated from storage to hybrid storage');
     }
 
     /**

@@ -435,7 +435,7 @@ describe('Filter Update API should', () => {
 
             lastCheckTime = filterVersionData[1]!.lastCheckTime;
             lastScheduledCheckTime = filterVersionData[1]!.lastScheduledCheckTime;
-            expect(lastScheduledCheckTime > lastCheckTime).toBeTruthy();
+            expect(lastScheduledCheckTime).toBeGreaterThan(lastCheckTime);
         });
     });
 });

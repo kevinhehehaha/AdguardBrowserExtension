@@ -21,7 +21,7 @@ import { safebrowsingStorageDataValidator, type SafebrowsingCacheData } from '..
 import { SB_LRU_CACHE_KEY } from '../../common/constants';
 import { logger } from '../../common/logger';
 
-import { storage } from './main';
+import { storage } from './shared-instances';
 
 /**
  * Class for control persisted {@link LRUMap} safebrowsing cache.

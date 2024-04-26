@@ -4,7 +4,7 @@
 
 import * as idb from 'idb';
 
-import { StorageInterface } from '../../common/storage';
+import { ExtendedStorageInterface } from '../../common/storage';
 
 const DEFAULT_STORE_NAME = 'defaultStore';
 const DEFAULT_IDB_NAME = 'adguardIDB';
@@ -13,7 +13,7 @@ const DEFAULT_IDB_NAME = 'adguardIDB';
  * Provides a storage mechanism using IndexedDB. This class implements the
  * StorageInterface with asynchronous methods to interact with the database.
  */
-export class IDBStorage implements StorageInterface<string, unknown, 'async'> {
+export class IDBStorage implements ExtendedStorageInterface<string, unknown, 'async'> {
     /**
      * Holds the instance of the IndexedDB database.
      *
@@ -132,5 +132,37 @@ export class IDBStorage implements StorageInterface<string, unknown, 'async'> {
         }
 
         return true;
+    }
+
+    /**
+     * Removes multiple key-value pairs from the storage.
+     *
+     * @param keys The keys to remove.
+     */
+    public async removeMultiple(keys: string[]): Promise<boolean> {
+        const db = await this.getOpenedDb();
+        const tx = db.transaction(this.store, 'readwrite');
+
+        try {
+            await Promise.all(keys.map((key) => tx.store.delete(key)));
+            await tx.done;
+        } catch (e) {
+            tx.abort();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get the entire contents of the storage.
+     *
+     * @returns Promise that resolves with the entire contents of the storage.
+     */
+    public async entries(): Promise<Record<string, unknown>> {
+        const db = await this.getOpenedDb();
+        const entries = await db.getAll(this.store);
+
+        return Object.fromEntries(entries.map((entry) => [entry.key, entry.value]));
     }
 }

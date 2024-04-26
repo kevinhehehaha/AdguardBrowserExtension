@@ -32,7 +32,7 @@ import {
     PageStatsDataItem,
 } from '../schema';
 
-import { storage } from './main';
+import { storage } from './shared-instances';
 
 /**
  * Class for asynchronous control {@link PageStats} storage data,

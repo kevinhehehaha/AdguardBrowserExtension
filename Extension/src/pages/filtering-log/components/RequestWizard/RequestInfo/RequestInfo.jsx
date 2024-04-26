@@ -97,55 +97,80 @@ const getType = (selectedEvent) => {
 /**
  * Returns rule text with conversion info
  *
- * @param rule
+ * @param rule Rule object to get rule text from
+ * @returns An object with the following properties:
+ * - `appliedRuleText` - rule text that was applied to the request
+ * - `originalRuleText` - original rule text that was converted to the applied rule text (if any)
+ * If the rule was not converted, `appliedRuleText` is the original rule text and `originalRuleText` is undefined.
  */
-const getRuleText = (rule) => {
-    if (!rule) {
-        return null;
+const getRuleTexts = (rule) => {
+    const { ruleText, appliedRuleText } = rule;
+
+    // If the rule was converted, we need to show both original and applied rule texts
+    if (appliedRuleText) {
+        return {
+            appliedRuleText,
+            originalRuleText: ruleText,
+        };
     }
 
-    if (!rule.appliedRuleText) {
-        return rule.ruleText;
-    }
-
-    return `${rule.ruleText} (${reactTranslator.getMessage('filtering_modal_converted_to')} ${rule.appliedRuleText})`;
+    return {
+        appliedRuleText: ruleText,
+    };
 };
 
 /**
- * Returns rule text
+ * Get rule texts for the selected event
  *
  * @param selectedEvent
- * @returns {string|null}
+ * @returns An object with the following properties:
+ * - `appliedRuleTexts` - an array of rule texts that were applied to the request
+ * - `originalRuleTexts` - an array of original rule texts that were converted to the applied rule texts (if any)
+ * If the rule was not converted, `appliedRuleTexts` contains the original rule text and `originalRuleTexts` is empty.
  */
 const getRule = (selectedEvent) => {
+    // Prepare an empty result
+    const result = {
+        appliedRuleTexts: [],
+        originalRuleTexts: [],
+    };
+
+    // Handle replace rules
     const replaceRules = selectedEvent?.replaceRules;
     if (replaceRules && replaceRules.length > 0) {
-        return replaceRules.map((rule) => getRuleText(rule)).join('\n');
+        replaceRules.forEach(rule => {
+            const { appliedRuleText, originalRuleText } = getRuleTexts(rule);
+
+            if (appliedRuleText) {
+                result.appliedRuleTexts.push(appliedRuleText);
+            }
+
+            if (originalRuleText) {
+                result.originalRuleTexts.push(originalRuleText);
+            }
+        });
+
+        return result;
     }
 
+    // Handle allowlist rules
     const requestRule = selectedEvent?.requestRule;
     if (
         requestRule?.allowlistRule
         && requestRule?.documentLevelRule
         && requestRule?.filterId === AntiBannerFiltersId.AllowlistFilterId
     ) {
-        return null;
+        // Empty result
+        return result;
     }
-    return getRuleText(requestRule);
-};
 
-/**
- * Returns field title for one rule or many rules
- *
- * @param selectedEvent
- * @returns {string}
- */
-const getRuleFieldTitle = (selectedEvent) => {
-    const replaceRules = selectedEvent?.replaceRules;
-    if (replaceRules && replaceRules.length > 1) {
-        return reactTranslator.getMessage('filtering_modal_rules');
-    }
-    return reactTranslator.getMessage('filtering_modal_rule');
+    // Handle other rules
+    const { appliedRuleText, originalRuleText } = getRuleTexts(requestRule);
+
+    return {
+        appliedRuleTexts: appliedRuleText ? [appliedRuleText] : [],
+        originalRuleTexts: originalRuleText ? [originalRuleText] : [],
+    };
 };
 
 const PARTS = {
@@ -154,7 +179,8 @@ const PARTS = {
     COOKIE: 'COOKIE',
     TYPE: 'TYPE',
     SOURCE: 'SOURCE',
-    RULE: 'RULE',
+    APPLIED_RULE: 'APPLIED_RULE',
+    ORIGINAL_RULE: 'ORIGINAL_RULE',
     FILTER: 'FILTER',
     STEALTH: 'STEALTH',
 };
@@ -202,11 +228,6 @@ const RequestInfo = observer(() => {
             title: reactTranslator.getMessage('filtering_modal_source'),
             data: selectedEvent.frameDomain,
         },
-        [PARTS.RULE]: {
-            title: getRuleFieldTitle(selectedEvent),
-            data: getRule(selectedEvent),
-        },
-        // TODO add converted rule text
         [PARTS.FILTER]: {
             title: reactTranslator.getMessage('filtering_modal_filter'),
             data: getFilterName(selectedEvent.requestRule?.filterId, filtersMetadata),
@@ -217,13 +238,32 @@ const RequestInfo = observer(() => {
         },
     };
 
+    // Handle rule texts
+    const rule = getRule(selectedEvent);
+
+    eventPartsMap[PARTS.APPLIED_RULE] = {
+        title: reactTranslator.getPlural('filtering_modal_applied_rules', Math.max(rule.appliedRuleTexts.length, 1)),
+        data: rule.appliedRuleTexts.length > 0
+            ? rule.appliedRuleTexts.join('\n')
+            : null,
+    };
+
+    // Original rule texts contains elements only if the rule was converted
+    if (rule.originalRuleTexts.length > 0) {
+        eventPartsMap[PARTS.ORIGINAL_RULE] = {
+            title: reactTranslator.getPlural('filtering_modal_original_rules', Math.max(rule.originalRuleTexts.length, 1)),
+            data: rule.originalRuleTexts.join('\n'),
+        };
+    }
+
     let infoElements = [
         PARTS.URL,
         PARTS.ELEMENT,
         PARTS.COOKIE,
         PARTS.TYPE,
         PARTS.SOURCE,
-        PARTS.RULE,
+        PARTS.APPLIED_RULE,
+        PARTS.ORIGINAL_RULE,
         PARTS.FILTER,
         PARTS.STEALTH,
     ];
@@ -235,7 +275,8 @@ const RequestInfo = observer(() => {
             PARTS.SOURCE,
             // TODO: determine first/third-party
             PARTS.STEALTH,
-            PARTS.RULE,
+            PARTS.APPLIED_RULE,
+            PARTS.ORIGINAL_RULE,
             PARTS.FILTER,
         ];
     }

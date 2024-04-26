@@ -34,11 +34,9 @@ import { logger } from '../../common/logger';
 import { translator } from '../../common/translators/translator';
 import { listeners } from '../notifier';
 import { Engine } from '../engine';
-import { settingsStorage } from '../storages';
+import { FiltersStorage, settingsStorage } from '../storages';
 import { SettingOption } from '../schema';
 import { TabsApi } from '../../common/api/extension/tabs';
-
-import { UserRulesApi } from './filters';
 
 export type FilteringEventRuleData = {
     filterId: number,
@@ -86,6 +84,23 @@ export type FilteringLogTabInfo = {
     isExtensionTab: boolean,
     filteringEvents: FilteringLogEvent[],
 };
+
+/**
+ * Interface for representing rule text and applied rule text. Sometimes rules are converted, but we also need to show
+ * original rule text in the filtering log.
+ */
+interface RuleText {
+    /**
+     * Original rule text, always present. If rule wasn't converted, only rule text is present.
+     */
+    ruleText: string;
+
+    /**
+     * Applied rule text. If rule was converted, applied rule text is the converted rule text and rule text is the
+     * original rule text.
+     */
+    appliedRuleText?: string;
+}
 
 /**
  * The filtering log collects all available information about requests
@@ -415,18 +430,37 @@ export class FilteringLogApi {
     }
 
     /**
+     * Helper method to get original rule text from {@link FiltersStorage}.
+     * Applied filter rule may be converted, but we need to store original rule text in the filtering log.
+     *
+     * @param filterId Filter id.
+     * @param ruleText Applied rule text.
+     * @returns Rule text and applied rule text (if rule was converted, otherwise `undefined`).
+     */
+    private static async getAppliedAndOriginalRuleTexts(filterId: number, ruleText: string): Promise<RuleText> {
+        // Get original rule text from storage. If rule wasn't converted, original rule text is `undefined`.
+        const originalRuleText = await FiltersStorage.getOriginalRuleText(filterId, ruleText);
+
+        if (!originalRuleText) {
+            return { ruleText };
+        }
+
+        return { ruleText: originalRuleText, appliedRuleText: ruleText };
+    }
+
+    /**
      * Creates {@link FilteringEventRuleData} from {@link NetworkRule}.
      *
      * @param rule Network rule.
      * @returns Object of {@link FilteringEventRuleData}.
      */
-    public static createNetworkRuleEventData(rule: NetworkRule): FilteringEventRuleData {
+    public static async createNetworkRuleEventData(rule: NetworkRule): Promise<FilteringEventRuleData> {
         const filterId = rule.getFilterListId();
         const ruleText = rule.getText();
 
         const data: FilteringEventRuleData = {
             filterId,
-            ruleText,
+            ...(await FilteringLogApi.getAppliedAndOriginalRuleTexts(filterId, ruleText)),
         };
 
         if (rule.isOptionEnabled(NetworkRuleOption.Important)) {
@@ -450,14 +484,6 @@ export class FilteringLogApi {
             data.modifierValue = advancedModifiedValue;
         }
 
-        if (filterId === AntiBannerFiltersId.UserFilterId) {
-            const originalRule = UserRulesApi.getSourceRule(rule.getText());
-            if (originalRule) {
-                data.ruleText = originalRule;
-                data.appliedRuleText = rule.getText();
-            }
-        }
-
         return data;
     }
 
@@ -467,14 +493,15 @@ export class FilteringLogApi {
      * @param rule Cosmetic rule.
      * @returns Object of {@link FilteringEventRuleData}.
      */
-    public static createCosmeticRuleEventData(rule: CosmeticRule): FilteringEventRuleData {
+    public static async createCosmeticRuleEventData(rule: CosmeticRule): Promise<FilteringEventRuleData> {
         const data: FilteringEventRuleData = Object.create(null);
 
         const filterId = rule.getFilterListId();
         const ruleText = rule.getText();
 
         data.filterId = filterId;
-        data.ruleText = ruleText;
+        // add `ruleText` and `appliedRuleText` properties to data for original and applied rule texts respectively
+        Object.assign(data, await FilteringLogApi.getAppliedAndOriginalRuleTexts(filterId, ruleText));
 
         const ruleType = rule.getType();
 
@@ -485,14 +512,6 @@ export class FilteringLogApi {
             data.cssRule = true;
         } else if (ruleType === CosmeticRuleType.Js) {
             data.scriptRule = true;
-        }
-
-        if (filterId === AntiBannerFiltersId.UserFilterId) {
-            const originalRule = UserRulesApi.getSourceRule(rule.getText());
-            if (originalRule) {
-                data.ruleText = originalRule;
-                data.appliedRuleText = rule.getText();
-            }
         }
 
         return data;

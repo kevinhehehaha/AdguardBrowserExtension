@@ -20,7 +20,7 @@ import { ANNOYANCES_CONSENT_KEY } from '../../common/constants';
 import { AnnoyancesConsentStorageData } from '../schema';
 import { StringStorage } from '../utils/string-storage';
 
-import { storage } from './main';
+import { storage } from './shared-instances';
 
 /**
  * Instance of {@link StringStorage} that stores filter ids for granted consent of

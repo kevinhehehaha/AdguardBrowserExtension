@@ -153,9 +153,6 @@ export class Engine {
 
             // Remove duplicates.
             userrules = Array.from(new Set(userrules));
-
-            // Convert user rules.
-            userrules = UserRulesApi.convertRules(userrules);
         }
 
         const trustedDomains = await DocumentBlockApi.getTrustedDomains();

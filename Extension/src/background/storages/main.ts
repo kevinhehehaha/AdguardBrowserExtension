@@ -17,12 +17,12 @@
  */
 import browser from 'webextension-polyfill';
 
-import { StorageInterface } from '../../common/storage';
+import { ExtendedStorageInterface } from '../../common/storage';
 
 /**
  * Wrapper for browser.storage.local with dev-friendly interface.
  */
-export class Storage implements StorageInterface<string, unknown, 'async'> {
+export class Storage implements ExtendedStorageInterface<string, unknown, 'async'> {
     // extension storage API
     private storage = browser.storage.local;
 
@@ -81,6 +81,23 @@ export class Storage implements StorageInterface<string, unknown, 'async'> {
             return false;
         }
     }
-}
 
-export const storage = new Storage();
+    /**
+     * Removes multiple key-value pairs from the storage.
+     *
+     * @param keys The keys to remove.
+     */
+    public async removeMultiple(keys: string[]): Promise<boolean> {
+        await this.storage.remove(keys);
+        return true;
+    }
+
+    /**
+     * Get the entire contents of the storage.
+     *
+     * @returns Promise that resolves with the entire contents of the storage.
+     */
+    public async entries(): Promise<Record<string, unknown>> {
+        return this.storage.get(null);
+    }
+}

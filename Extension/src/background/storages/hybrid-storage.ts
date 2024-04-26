@@ -7,7 +7,7 @@
 import { nanoid } from 'nanoid';
 import * as idb from 'idb';
 
-import { StorageInterface } from '../../common/storage';
+import { ExtendedStorageInterface } from '../../common/storage';
 
 import { Storage } from './main';
 import { IDBStorage } from './idb-storage';
@@ -19,13 +19,13 @@ const TEST_IDB_NAME_PREFIX = 'test_';
  * based on browser capabilities and environment constraints. This class adheres to the StorageInterface,
  * allowing for asynchronous get and set operations.
  */
-export class HybridStorage implements StorageInterface<string, unknown, 'async'> {
+export class HybridStorage implements ExtendedStorageInterface<string, unknown, 'async'> {
     /**
      * Holds the instance of the selected storage mechanism.
      *
      * @private
      */
-    private storage: StorageInterface<string, unknown, 'async'> | null = null;
+    private storage: ExtendedStorageInterface<string, unknown, 'async'> | null = null;
 
     /**
      * Determines the appropriate storage mechanism to use. If IndexedDB is supported, it uses IDBStorage;
@@ -34,7 +34,7 @@ export class HybridStorage implements StorageInterface<string, unknown, 'async'>
      *
      * @returns The storage instance to be used for data operations.
      */
-    private async getStorage(): Promise<StorageInterface<string, unknown, 'async'>> {
+    private async getStorage(): Promise<ExtendedStorageInterface<string, unknown, 'async'>> {
         if (this.storage) {
             return this.storage;
         }
@@ -116,6 +116,26 @@ export class HybridStorage implements StorageInterface<string, unknown, 'async'>
      */
     public async setMultiple(data: Record<string, unknown>): Promise<boolean> {
         const storage = await this.getStorage();
-        return storage.setMultiple?.(data) ?? false;
+        return storage.setMultiple(data) ?? false;
+    }
+
+    /**
+     * Removes multiple key-value pairs from the storage.
+     *
+     * @param keys The keys to remove.
+     */
+    public async removeMultiple(keys: string[]): Promise<boolean> {
+        const storage = await this.getStorage();
+        return storage.removeMultiple?.(keys) ?? false;
+    }
+
+    /**
+     * Get the entire contents of the storage.
+     *
+     * @returns Promise that resolves with the entire contents of the storage.
+     */
+    public async entries(): Promise<Record<string, unknown>> {
+        const storage = await this.getStorage();
+        return storage.entries();
     }
 }
