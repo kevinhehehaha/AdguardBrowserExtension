@@ -93,6 +93,11 @@ export class UserRulesApi {
 
     /**
      * Returns original rules from user list.
+     *
+     * When we save user rules, the rules may be modified (e.g converted),
+     * but when user opens the editor, we need to show their original rules.
+     * User rules is a bit special because for that list we store the whole original filter list.
+     * This method return that original list and we use it to load content in the editor.
      */
     public static async getOriginalUserRules(): Promise<string[]> {
         return FiltersStorage.getOriginalUserRules();
