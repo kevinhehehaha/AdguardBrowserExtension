@@ -116,7 +116,7 @@ export class HybridStorage implements ExtendedStorageInterface<string, unknown, 
      */
     public async setMultiple(data: Record<string, unknown>): Promise<boolean> {
         const storage = await this.getStorage();
-        return storage.setMultiple(data) ?? false;
+        return (await storage.setMultiple(data)) ?? false;
     }
 
     /**

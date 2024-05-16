@@ -70,7 +70,7 @@ export class FiltersStorage {
      */
     static async set(filterId: number, filter: string[]): Promise<void> {
         const data = FiltersStorage.getDataToSet(filterId, filter);
-        hybridStorage.setMultiple(data);
+        await hybridStorage.setMultiple(data);
     }
 
     /**
