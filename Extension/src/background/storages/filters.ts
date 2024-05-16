@@ -69,7 +69,7 @@ export class FiltersStorage {
      * @param filter Filter rules strings.
      */
     static async set(filterId: number, filter: string[]): Promise<void> {
-        const data = FiltersStorage.getDataToSet(filterId, filter);
+        const data = FiltersStorage.prepareFilterForStorage(filterId, filter);
         await hybridStorage.setMultiple(data);
     }
 
@@ -80,7 +80,7 @@ export class FiltersStorage {
      * @param filter Filter rules strings.
      * @returns Record with data to set to the storage.
      */
-    static getDataToSet(filterId: number, filter: string[]): Record<string, unknown> {
+    static prepareFilterForStorage(filterId: number, filter: string[]): Record<string, unknown> {
         const result: Record<string, unknown> = {};
 
         const filterKey = FiltersStorage.getFilterKey(filterId);

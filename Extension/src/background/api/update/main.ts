@@ -184,7 +184,7 @@ export class UpdateApi {
                 ? filterParsingResult.data
                 : filterParsingResult.data.split(NEWLINE_CHAR_REGEX);
 
-            Object.assign(migratedData, FiltersStorage.getDataToSet(filterId, lines));
+            Object.assign(migratedData, FiltersStorage.prepareFilterForStorage(filterId, lines));
         });
 
         // Migrate raw filters.
