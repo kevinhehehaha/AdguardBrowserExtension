@@ -128,7 +128,7 @@ export class HybridStorage implements ExtendedStorageInterface<string, unknown, 
      */
     public async removeMultiple(keys: string[]): Promise<boolean> {
         const storage = await this.getStorage();
-        return storage.removeMultiple?.(keys) ?? false;
+        return (await storage.removeMultiple(keys)) ?? false;
     }
 
     /**
