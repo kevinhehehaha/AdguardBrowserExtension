@@ -159,7 +159,7 @@ export class UpdateApi {
         }
 
         // Prepare data to migrate.
-        const migratedData: Record<string, string> = {};
+        const migrationData: Record<string, string> = {};
 
         // Migrate filters.
         filterKeys.forEach((key) => {
@@ -184,7 +184,7 @@ export class UpdateApi {
                 ? filterParsingResult.data
                 : filterParsingResult.data.split(NEWLINE_CHAR_REGEX);
 
-            Object.assign(migratedData, FiltersStorage.prepareFilterForStorage(filterId, lines));
+            Object.assign(migrationData, FiltersStorage.prepareFilterForStorage(filterId, lines));
         });
 
         // Migrate raw filters.
@@ -205,11 +205,11 @@ export class UpdateApi {
                 return;
             }
 
-            migratedData[key] = filterParsingResult.data;
+            migrationData[key] = filterParsingResult.data;
         });
 
         // Save migrated data to the hybrid storage with a single transaction.
-        const transactionResult = await hybridStorage.setMultiple(migratedData);
+        const transactionResult = await hybridStorage.setMultiple(migrationData);
         if (!transactionResult) {
             throw new Error('Failed to migrate filters from storage to hybrid storage, transaction failed');
         }
