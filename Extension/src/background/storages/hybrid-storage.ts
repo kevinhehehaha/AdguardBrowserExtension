@@ -12,6 +12,10 @@ import { ExtendedStorageInterface } from '../../common/storage';
 import { Storage } from './main';
 import { IDBStorage } from './idb-storage';
 
+/**
+ * Prefix for the test IndexedDB database name.
+ * This test database is used to check if IndexedDB is supported in the current environment.
+ */
 const TEST_IDB_NAME_PREFIX = 'test_';
 
 /**
