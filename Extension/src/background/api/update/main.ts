@@ -161,6 +161,11 @@ export class UpdateApi {
         // Prepare data to migrate.
         const migrationData: Record<string, string> = {};
 
+        const filterSchema = zod.union([
+            zod.string(),
+            zod.array(zod.string()),
+        ]);
+
         // Migrate filters.
         filterKeys.forEach((key) => {
             const filterId = FiltersStorage.extractFilterIdFromFilterKey(key);
@@ -169,7 +174,6 @@ export class UpdateApi {
                 return;
             }
 
-            const filterSchema = zod.union([zod.string(), zod.array(zod.string())]);
             const filterParsingResult = filterSchema.safeParse(entries[key]);
 
             if (!filterParsingResult.success) {
