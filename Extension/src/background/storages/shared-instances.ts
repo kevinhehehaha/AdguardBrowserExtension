@@ -21,7 +21,7 @@ import { BrowserStorage } from './browser-storage';
 /**
  * Storage instance for accessing `browser.storage.local`.
  */
-export const storage = new BrowserStorage();
+export const browserStorage = new BrowserStorage();
 
 /**
  * Storage instance for accessing `IndexedDB` with fallback to `browser.storage.local`.

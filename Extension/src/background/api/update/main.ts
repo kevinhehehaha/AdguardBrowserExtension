@@ -25,7 +25,7 @@ import {
     FiltersStorage,
     SbCache,
     hybridStorage,
-    storage,
+    browserStorage,
     RawFiltersStorage,
 } from '../../storages';
 import {
@@ -74,14 +74,14 @@ export class UpdateApi {
     }: RunInfo): Promise<void> {
         // check clientId existence
         if (clientId) {
-            await storage.set(CLIENT_ID_KEY, clientId);
+            await browserStorage.set(CLIENT_ID_KEY, clientId);
         } else {
-            await storage.set(CLIENT_ID_KEY, InstallApi.genClientId());
+            await browserStorage.set(CLIENT_ID_KEY, InstallApi.genClientId());
         }
 
         // set actual schema and app version
-        await storage.set(SCHEMA_VERSION_KEY, currentSchemaVersion);
-        await storage.set(APP_VERSION_KEY, currentAppVersion);
+        await browserStorage.set(SCHEMA_VERSION_KEY, currentSchemaVersion);
+        await browserStorage.set(APP_VERSION_KEY, currentAppVersion);
 
         // run migrations, if they needed.
         await UpdateApi.runMigrations(currentSchemaVersion, previousSchemaVersion);
@@ -113,7 +113,7 @@ export class UpdateApi {
         } catch (e) {
             logger.error('Error while migrate: ', e);
             logger.info('Reset settings...');
-            await storage.set(ADGUARD_SETTINGS_KEY, defaultSettings);
+            await browserStorage.set(ADGUARD_SETTINGS_KEY, defaultSettings);
         }
     }
 
@@ -145,7 +145,7 @@ export class UpdateApi {
      */
     private static async migrateFromV3toV4(): Promise<void> {
         // Get all entries from the `browser.storage.local`.
-        const entries = await storage.entries();
+        const entries = await browserStorage.entries();
 
         // Find all keys that are related to filters.
         const keys = Object.keys(entries);
@@ -219,7 +219,7 @@ export class UpdateApi {
         }
 
         // Delete filters from the `browser.storage.local` after successful migration.
-        await storage.removeMultiple([...rawFilterKeys, ...filterKeys]);
+        await browserStorage.removeMultiple([...rawFilterKeys, ...filterKeys]);
 
         logger.debug('Filters successfully migrated from storage to hybrid storage');
     }
@@ -248,7 +248,7 @@ export class UpdateApi {
                 .parse(data);
 
             const results = await Promise.allSettled(
-                lists.map(async ({ key, value }) => storage.set(key, value.split(/\r?\n/))),
+                lists.map(async ({ key, value }) => browserStorage.set(key, value.split(/\r?\n/))),
             );
 
             results.forEach((result) => {
@@ -267,7 +267,7 @@ export class UpdateApi {
         /**
          * Add missed trusted flags for custom filters.
          */
-        const storageData = await storage.get('adguard-settings');
+        const storageData = await browserStorage.get('adguard-settings');
         const settings = zod.record(zod.unknown()).parse(storageData);
         const customFilters = settings['custom-filters'];
 
@@ -286,7 +286,7 @@ export class UpdateApi {
             const customFiltersData = JSON.parse(customFilters);
             settings['custom-filters'] = JSON.stringify(customFiltersDataTransformer.parse(customFiltersData));
 
-            await storage.set('adguard-settings', settings);
+            await browserStorage.set('adguard-settings', settings);
         }
     }
 
@@ -295,7 +295,7 @@ export class UpdateApi {
      */
     private static async migrateFromV1toV2(): Promise<void> {
         // From v4.2.135 we store timestamp of expiration time for safebrowsing cache records.
-        const storageData = await storage.get('sb-lru-cache');
+        const storageData = await browserStorage.get('sb-lru-cache');
 
         if (typeof storageData !== 'string') {
             return;
@@ -327,7 +327,7 @@ export class UpdateApi {
             };
         });
 
-        await storage.set('sb-lru-cache', JSON.stringify(sbStorageDataV2));
+        await browserStorage.set('sb-lru-cache', JSON.stringify(sbStorageDataV2));
     }
 
     /**
@@ -343,7 +343,7 @@ export class UpdateApi {
         // In the v4.2.0 we are refactoring storage data structure
 
         // get current settings
-        const storageData = await storage.get('adguard-settings');
+        const storageData = await browserStorage.get('adguard-settings');
 
         // check if current settings is record
         const currentSettings = zod
@@ -534,7 +534,7 @@ export class UpdateApi {
         const settings = settingsValidator.parse({ ...defaultSettings, ...currentSettings });
 
         // set new settings to storage
-        await storage.set('adguard-settings', settings);
+        await browserStorage.set('adguard-settings', settings);
     }
 
     /**
@@ -551,7 +551,7 @@ export class UpdateApi {
 
         if (data) {
             delete currentSettings[key];
-            await storage.set(key, data);
+            await browserStorage.set(key, data);
         }
     }
 }

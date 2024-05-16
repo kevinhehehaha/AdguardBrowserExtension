@@ -59,7 +59,7 @@ import {
     HitStatsApi,
     TabsApi,
 } from '../api';
-import { storage } from '../storages';
+import { browserStorage } from '../storages';
 import { SettingOption } from '../schema';
 
 type GetFilteringLogDataResponse = {
@@ -500,6 +500,6 @@ export class FilteringLogService {
     ): Promise<void> {
         const { windowState } = data;
 
-        await storage.set(FILTERING_LOG_WINDOW_STATE, JSON.stringify(windowState));
+        await browserStorage.set(FILTERING_LOG_WINDOW_STATE, JSON.stringify(windowState));
     }
 }

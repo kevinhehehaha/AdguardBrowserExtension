@@ -19,7 +19,7 @@ import { HIT_STATISTIC_KEY } from '../../common/constants';
 import { StringStorage } from '../utils/string-storage';
 import { HitStatsStorageData } from '../schema';
 
-import { storage } from './shared-instances';
+import { browserStorage } from './shared-instances';
 
 /**
  * Class for asynchronous control {@link HitStats} storage data,
@@ -76,10 +76,10 @@ export class HitStatsStorage extends StringStorage<typeof HIT_STATISTIC_KEY, Hit
 
 /**
  * Instance of {@link HitStatsStorage}, that stores
- * stringified {@link HitStats} in {@link storage} under
+ * stringified {@link HitStats} in {@link browserStorage} under
  * {@link HIT_STATISTIC_KEY} key.
  */
 export const hitStatsStorage = new HitStatsStorage(
     HIT_STATISTIC_KEY,
-    storage,
+    browserStorage,
 );
