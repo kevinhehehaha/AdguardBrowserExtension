@@ -26,8 +26,6 @@ const TEST_IDB_NAME_PREFIX = 'test_';
 export class HybridStorage implements ExtendedStorageInterface<string, unknown, 'async'> {
     /**
      * Holds the instance of the selected storage mechanism.
-     *
-     * @private
      */
     private storage: ExtendedStorageInterface<string, unknown, 'async'> | null = null;
 
