@@ -16,12 +16,12 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 import { HybridStorage } from './hybrid-storage';
-import { Storage } from './main';
+import { BrowserStorage } from './browser-storage';
 
 /**
  * Storage instance for accessing `browser.storage.local`.
  */
-export const storage = new Storage();
+export const storage = new BrowserStorage();
 
 /**
  * Storage instance for accessing `IndexedDB` with fallback to `browser.storage.local`.

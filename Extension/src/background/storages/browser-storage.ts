@@ -22,7 +22,7 @@ import { ExtendedStorageInterface } from '../../common/storage';
 /**
  * Wrapper for browser.storage.local with dev-friendly interface.
  */
-export class Storage implements ExtendedStorageInterface<string, unknown, 'async'> {
+export class BrowserStorage implements ExtendedStorageInterface<string, unknown, 'async'> {
     // extension storage API
     private storage = browser.storage.local;
 

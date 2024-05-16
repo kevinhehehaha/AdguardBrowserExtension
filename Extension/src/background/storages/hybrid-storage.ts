@@ -9,7 +9,7 @@ import * as idb from 'idb';
 
 import { ExtendedStorageInterface } from '../../common/storage';
 
-import { Storage } from './main';
+import { BrowserStorage } from './browser-storage';
 import { IDBStorage } from './idb-storage';
 
 /**
@@ -44,7 +44,7 @@ export class HybridStorage implements ExtendedStorageInterface<string, unknown, 
         if (await HybridStorage.isIDBSupported()) {
             this.storage = new IDBStorage();
         } else {
-            this.storage = new Storage();
+            this.storage = new BrowserStorage();
         }
 
         return this.storage;
