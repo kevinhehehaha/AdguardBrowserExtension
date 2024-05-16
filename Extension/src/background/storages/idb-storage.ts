@@ -103,7 +103,7 @@ export class IDBStorage implements ExtendedStorageInterface<string, unknown, 'as
 
     /**
      * Atomic set operation for multiple key-value pairs.
-     * This method are using transaction to ensure atomicity, if any of the operations fail,
+     * This method is using transaction to ensure atomicity, if any of the operations fail,
      * the entire operation is rolled back. This helps to prevent data corruption / inconsistency.
      *
      * @param data The key-value pairs to set.
