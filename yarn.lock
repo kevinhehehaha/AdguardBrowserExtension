@@ -3,9 +3,9 @@
 
 
 "@adguard/agtree@^2.0.0":
-  version "1.1.7"
-  resolved "https://registry.yarnpkg.com/@adguard/agtree/-/agtree-1.1.7.tgz#0bafee0396da704958ba6014ad83565e57c5b279"
-  integrity sha512-xol2aSim0BYnxCk/OULE3qXFToSnadNsl4q6DDjhHkXvKTr0Y6hnfq4Ub3BGgEpyzGYYkN37BDz8IEUDdpRyew==
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/@adguard/agtree/-/agtree-1.1.8.tgz#e001389bdb08476eb3c55e56922179a14e9b5fbf"
+  integrity sha512-5k9bYA+JSfZgYTvwahkM8ihIf1fvP+RxA1dKLgkRIGa6ixOSWNKv/pN0Rpiy0DwZJbC9X/OeZrtdW66jASH/JA==
   dependencies:
     "@adguard/ecss-tree" "^1.0.8"
     "@adguard/scriptlets" "^1.9.61"
@@ -70,7 +70,7 @@
 
 "@adguard/tsurlfilter@^2.2.19", "@adguard/tsurlfilter@https://github.com/AdguardTeam/tsurlfilter/raw/release/v2.3/packages/tsurlfilter/adguard-tsurlfilter-2.2.19.tgz":
   version "2.2.19"
-  resolved "https://github.com/AdguardTeam/tsurlfilter/raw/release/v2.3/packages/tsurlfilter/adguard-tsurlfilter-2.2.19.tgz#32d3f376f8ba6d8e9d28db5fa61d6cb5c71ab256"
+  resolved "https://github.com/AdguardTeam/tsurlfilter/raw/release/v2.3/packages/tsurlfilter/adguard-tsurlfilter-2.2.19.tgz#9189958e415ac6435df1b0c07889fcd98cfb4207"
   dependencies:
     "@adguard/agtree" "^2.0.0"
     "@adguard/scriptlets" "^1.10.25"
