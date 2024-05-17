@@ -18,29 +18,21 @@ const DEFAULT_IDB_NAME = 'adguardIDB';
 export class IDBStorage implements ExtendedStorageInterface<string, unknown, 'async'> {
     /**
      * Holds the instance of the IndexedDB database.
-     *
-     * @private
      */
     private db: idb.IDBPDatabase | null = null;
 
     /**
      * The name of the database.
-     *
-     * @private
      */
     private name: string;
 
     /**
      * The version of the database. Used for upgrades.
-     *
-     * @private
      */
     private version: number;
 
     /**
      * The name of the store within the database.
-     *
-     * @private
      */
     private store: string;
 
@@ -61,13 +53,20 @@ export class IDBStorage implements ExtendedStorageInterface<string, unknown, 'as
      * Ensures the database is opened before any operations. If the database
      * is not already opened, it opens the database.
      *
-     * @private
      * @returns The opened database instance.
      */
     private async getOpenedDb(): Promise<idb.IDBPDatabase> {
         if (!this.db) {
-            this.db = await idb.openDB(this.name, this.version);
+            this.db = await idb.openDB(this.name, this.version, {
+                upgrade: (db) => {
+                    // make sure the store exists
+                    if (!db.objectStoreNames.contains(this.store)) {
+                        db.createObjectStore(this.store);
+                    }
+                },
+            });
         }
+
         return this.db;
     }
 

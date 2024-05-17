@@ -20,6 +20,7 @@ import zod from 'zod';
 import { FilterConverter } from '../utils/filter-converter';
 import { logger } from '../../common/logger';
 import { AntiBannerFiltersId, FILTER_LIST_EXTENSION } from '../../common/constants';
+import { getErrorMessage } from '../../common/error';
 
 import { hybridStorage } from './shared-instances';
 
@@ -52,6 +53,11 @@ const ORIGINAL_FILTER_KEY_PREFIX = 'originalfilterrules_';
 const CONVERSION_MAP_PREFIX = 'conversionmap_';
 
 /**
+ * Schema for the conversion map.
+ */
+const CONVERSION_MAP_SCHEMA = zod.record(zod.string(), zod.string());
+
+/**
  * Regular expression that helps to extract filter id from the key.
  */
 const RE_FILTER_KEY = new RegExp(
@@ -63,6 +69,27 @@ const RE_FILTER_KEY = new RegExp(
  */
 export class FiltersStorage {
     /**
+     * Cache for conversion maps.
+     * Key is filter id, value is its conversion map.
+     */
+    private static readonly conversionMaps = new Map<number, Record<string, string>>();
+
+    /**
+     * Updates conversion map cache for the specified filter list if possible.
+     *
+     * @param filterId Filter id.
+     * @param possibleMap Possible conversion map.
+     */
+    private static updateConversionMapIfPossible(filterId: number, possibleMap: unknown): void {
+        try {
+            const conversionMap = CONVERSION_MAP_SCHEMA.parse(possibleMap);
+            FiltersStorage.conversionMaps.set(filterId, conversionMap);
+        } catch (error: unknown) {
+            logger.error(`Failed to get conversion map for filter ${filterId} due to`, getErrorMessage(error));
+        }
+    }
+
+    /**
      * Sets specified filter list to {@link storage}.
      *
      * @param filterId Filter id.
@@ -71,6 +98,7 @@ export class FiltersStorage {
     static async set(filterId: number, filter: string[]): Promise<void> {
         const data = FiltersStorage.prepareFilterForStorage(filterId, filter);
         await hybridStorage.setMultiple(data);
+        FiltersStorage.updateConversionMapIfPossible(filterId, data.conversionMap);
     }
 
     /**
@@ -118,6 +146,10 @@ export class FiltersStorage {
     static async get(filterId: number): Promise<string[]> {
         const filterKey = FiltersStorage.getFilterKey(filterId);
         const data = await hybridStorage.get(filterKey);
+        // Update conversion map cache
+        const conversionMapKey = FiltersStorage.getConversionMapKey(filterId);
+        const conversionMapData = await hybridStorage.get(conversionMapKey);
+        FiltersStorage.updateConversionMapIfPossible(filterId, conversionMapData);
         return zod.string().array().parse(data);
     }
 
@@ -127,8 +159,10 @@ export class FiltersStorage {
      * @param filterId Filter id.
      */
     static async remove(filterId: number): Promise<void> {
-        const filterKey = FiltersStorage.getFilterKey(filterId);
-        return hybridStorage.remove(filterKey);
+        FiltersStorage.conversionMaps.delete(filterId);
+
+        await hybridStorage.remove(FiltersStorage.getConversionMapKey(filterId));
+        await hybridStorage.remove(FiltersStorage.getFilterKey(filterId, true));
     }
 
     /**
@@ -166,6 +200,18 @@ export class FiltersStorage {
     }
 
     /**
+     * Returns original rule for specified filter id and rule.
+     *
+     * @param filterId Filter id.
+     * @param rule Rule to get original rule for.
+     * @returns Original rule or `undefined` if not found.
+     */
+    public static getOriginalRuleText(filterId: number, rule: string): string | undefined {
+        const conversionMap = FiltersStorage.conversionMaps.get(filterId);
+        return conversionMap?.[rule];
+    }
+
+    /**
      * Returns original user rules from {@link hybridStorage}.
      *
      * @returns Promise, resolved with original user rules strings.
@@ -178,29 +224,5 @@ export class FiltersStorage {
         // If there are no rules in the storage, fallback to empty array
         const schema = zod.array(zod.string()).optional().default([]);
         return schema.parse(data);
-    }
-
-    /**
-     * Returns original rule text from the specified filter list and converted rule text.
-     *
-     * @param filterId Filter id.
-     * @param ruleText Rule text from the converted filter list.
-     * @returns Promise, resolved with the original rule text or `null` if the original rule text cannot be found.
-     */
-    static async getOriginalRuleText(filterId: number, ruleText: string): Promise<string | null> {
-        logger.debug(`Getting original rule text for '${ruleText}'`);
-
-        const conversionMapKey = FiltersStorage.getConversionMapKey(filterId);
-        const data = await hybridStorage.get(conversionMapKey);
-
-        try {
-            const conversionMap = zod.record(zod.string(), zod.string()).parse(data);
-            // eslint-disable-next-line max-len
-            logger.debug(`Conversion map for ${FiltersStorage.getFilterKey(filterId)}: ${JSON.stringify(conversionMap)}`);
-            return conversionMap[ruleText] ?? null;
-        } catch (error: unknown) {
-            logger.debug(`Failed to get original rule text for '${ruleText}' due to`, error);
-            return null;
-        }
     }
 }

@@ -437,9 +437,9 @@ export class FilteringLogApi {
      * @param ruleText Applied rule text.
      * @returns Rule text and applied rule text (if rule was converted, otherwise `undefined`).
      */
-    private static async getAppliedAndOriginalRuleTexts(filterId: number, ruleText: string): Promise<RuleText> {
+    private static getAppliedAndOriginalRuleTexts(filterId: number, ruleText: string): RuleText {
         // Get original rule text from storage. If rule wasn't converted, original rule text is `undefined`.
-        const originalRuleText = await FiltersStorage.getOriginalRuleText(filterId, ruleText);
+        const originalRuleText = FiltersStorage.getOriginalRuleText(filterId, ruleText);
 
         if (!originalRuleText) {
             return { ruleText };
@@ -454,13 +454,13 @@ export class FilteringLogApi {
      * @param rule Network rule.
      * @returns Object of {@link FilteringEventRuleData}.
      */
-    public static async createNetworkRuleEventData(rule: NetworkRule): Promise<FilteringEventRuleData> {
+    public static createNetworkRuleEventData(rule: NetworkRule): FilteringEventRuleData {
         const filterId = rule.getFilterListId();
         const ruleText = rule.getText();
 
         const data: FilteringEventRuleData = {
             filterId,
-            ...(await FilteringLogApi.getAppliedAndOriginalRuleTexts(filterId, ruleText)),
+            ...FilteringLogApi.getAppliedAndOriginalRuleTexts(filterId, ruleText),
         };
 
         if (rule.isOptionEnabled(NetworkRuleOption.Important)) {
@@ -493,7 +493,7 @@ export class FilteringLogApi {
      * @param rule Cosmetic rule.
      * @returns Object of {@link FilteringEventRuleData}.
      */
-    public static async createCosmeticRuleEventData(rule: CosmeticRule): Promise<FilteringEventRuleData> {
+    public static createCosmeticRuleEventData(rule: CosmeticRule): FilteringEventRuleData {
         const data: FilteringEventRuleData = Object.create(null);
 
         const filterId = rule.getFilterListId();
@@ -501,7 +501,7 @@ export class FilteringLogApi {
 
         data.filterId = filterId;
         // add `ruleText` and `appliedRuleText` properties to data for original and applied rule texts respectively
-        Object.assign(data, await FilteringLogApi.getAppliedAndOriginalRuleTexts(filterId, ruleText));
+        Object.assign(data, FilteringLogApi.getAppliedAndOriginalRuleTexts(filterId, ruleText));
 
         const ruleType = rule.getType();
 
