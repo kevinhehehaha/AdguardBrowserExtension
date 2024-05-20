@@ -201,7 +201,6 @@ export class FilteringLogService {
             ...eventData
         } = data;
 
-        // FIXME: get original rule text
         filteringLogApi.addEventData(tabId, {
             ...eventData,
             requestRule: FilteringLogApi.createCosmeticRuleEventData(rule),

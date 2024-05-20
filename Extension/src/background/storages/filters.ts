@@ -24,6 +24,12 @@ import { getErrorMessage } from '../../common/error';
 
 import { hybridStorage } from './shared-instances';
 
+export interface FilterData {
+    convertedFilterList: string;
+    conversionMap?: Record<string, string>;
+    sourceMap?: Record<number, number>;
+}
+
 /**
  * Prefix for storage keys where filter lists are stored.
  * These filter lists are stored in converted format, so before storing them, we convert them to AdGuard format.
@@ -224,5 +230,43 @@ export class FiltersStorage {
         // If there are no rules in the storage, fallback to empty array
         const schema = zod.array(zod.string()).optional().default([]);
         return schema.parse(data);
+    }
+
+    /**
+     * Get all filter data, including conversion map and source map.
+     *
+     * @param filterId Filter id.
+     * @returns Promise, resolved with filter data or `null` if filter is not found.
+     */
+    static async getAllFilterData(filterId: number): Promise<FilterData | null> {
+        const filterKey = FiltersStorage.getFilterKey(filterId);
+        const conversionMapKey = FiltersStorage.getConversionMapKey(filterId);
+
+        const [filter, conversionMap, sourceMap] = await Promise.all([
+            hybridStorage.get(filterKey),
+            hybridStorage.get(conversionMapKey),
+            hybridStorage.get(`sourceMap_${filterId}.txt`),
+        ]);
+
+        if (!filter) {
+            return null;
+        }
+
+        // FIXME: move schema to the top of the file
+        const parsedFilter = zod.string().array().parse(filter).join('\n');
+
+        const result: FilterData = {
+            convertedFilterList: parsedFilter,
+        };
+
+        if (conversionMap) {
+            result.conversionMap = CONVERSION_MAP_SCHEMA.parse(conversionMap);
+        }
+
+        if (sourceMap) {
+            result.sourceMap = zod.record(zod.number(), zod.number()).parse(sourceMap);
+        }
+
+        return result;
     }
 }
