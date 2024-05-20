@@ -120,7 +120,7 @@ const getRuleTexts = (rule) => {
 };
 
 /**
- * Get rule texts for the selected event
+ * Gets rule texts for the selected event
  *
  * @param selectedEvent
  * @returns An object with the following properties:
