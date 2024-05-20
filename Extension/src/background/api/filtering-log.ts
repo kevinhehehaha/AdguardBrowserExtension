@@ -497,6 +497,7 @@ export class FilteringLogApi {
         const data: FilteringEventRuleData = Object.create(null);
 
         const filterId = rule.getFilterListId();
+        // FIXME: get index here, and fetch original text from storage
         const ruleText = rule.getText();
 
         data.filterId = filterId;
@@ -505,12 +506,15 @@ export class FilteringLogApi {
 
         const ruleType = rule.getType();
 
-        if (ruleType === CosmeticRuleType.Html) {
+        if (ruleType === CosmeticRuleType.HtmlFilteringRule) {
             data.contentRule = true;
-        } else if (ruleType === CosmeticRuleType.ElementHiding
-            || ruleType === CosmeticRuleType.Css) {
+        } else if (ruleType === CosmeticRuleType.ElementHidingRule
+            || ruleType === CosmeticRuleType.CssInjectionRule) {
             data.cssRule = true;
-        } else if (ruleType === CosmeticRuleType.Js) {
+        } else if (
+            ruleType === CosmeticRuleType.ScriptletInjectionRule
+            || ruleType === CosmeticRuleType.JsInjectionRule
+        ) {
             data.scriptRule = true;
         }
 

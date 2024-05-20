@@ -161,7 +161,9 @@ export class Engine {
             verbose: false,
             logLevel: LogLevel.Info,
             filters,
-            userrules,
+            userrules: {
+                content: userrules.join('\n'),
+            },
             allowlist,
             settings,
             trustedDomains,

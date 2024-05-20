@@ -149,7 +149,9 @@ export class FilteringLogService {
     private static onSendRequest({ data }: SendRequestEvent): void {
         const { tabId, ...eventData } = data;
 
-        filteringLogApi.addEventData(tabId, eventData);
+        // TODO: fix `string | null` vs `string | undefined` inconsistency
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        filteringLogApi.addEventData(tabId, eventData as any);
     }
 
     /**
@@ -195,10 +197,11 @@ export class FilteringLogService {
     private static onApplyCosmeticRule({ data }: ApplyCosmeticRuleEvent): void {
         const {
             tabId,
-            rule,
+            ruleIndex,
             ...eventData
         } = data;
 
+        // FIXME: get original rule text
         filteringLogApi.addEventData(tabId, {
             ...eventData,
             requestRule: FilteringLogApi.createCosmeticRuleEventData(rule),
