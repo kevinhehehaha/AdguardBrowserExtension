@@ -171,6 +171,18 @@ class SettingsStore {
 
     @observable filterIdSelectedForConsent = null;
 
+    // FIXME consider moving to the separate store
+    @observable userRulesEnabledCount = 0;
+
+    @observable userRulesMaximumCount = 0;
+
+    @observable userRulesRegexpsEnabledCount = 0;
+
+    @observable userRulesRegexpsMaximumCount = 0;
+
+    @observable staticFiltersEnabledCount = 0;
+    @observable staticFiltersMaximumCount = 0;
+
     constructor(rootStore) {
         makeObservable(this);
         this.rootStore = rootStore;
@@ -184,6 +196,20 @@ class SettingsStore {
             });
         });
     }
+
+    @action
+    async setRulesLimits() {
+        const rulesLimits = await messenger.getRulesLimits();
+
+        runInAction(() => {
+            this.userRulesEnabledCount = rulesLimits.userRulesEnabledCount;
+            this.userRulesMaximumCount = rulesLimits.userRulesMaximumCount;
+            this.userRulesRegexpsEnabledCount = rulesLimits.userRulesRegexpsEnabledCount;
+            this.userRulesRegexpsMaximumCount = rulesLimits.userRulesRegexpsMaximumCount;
+            this.staticFiltersEnabledCount = rulesLimits.staticFiltersEnabledCount;
+            this.staticFiltersMaximumCount = rulesLimits.staticFiltersMaximumCount;
+        });
+    };
 
     @action
     async requestOptionsData(firstRender) {

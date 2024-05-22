@@ -36,6 +36,10 @@ import {
     DocumentBlockApi,
     CustomFilterApi,
 } from './api';
+// FIXME should provide empty implementation for mv2 version
+import {
+    configurationResultService
+} from './services/configuration-result/mv3/configuration-result';
 
 // FIXME: Move this to tswebextension/mv3 package.
 export type EngineMessage = {
@@ -96,7 +100,8 @@ export class Engine {
         const configuration = await Engine.getConfiguration();
 
         logger.info('Start tswebextension...');
-        await this.api.start(configuration);
+        const result = await this.api.start(configuration);
+        configurationResultService.set(result);
 
         const rulesCount = this.api.getRulesCount();
         logger.info(`tswebextension is started. Rules count: ${rulesCount}`);
@@ -125,7 +130,8 @@ export class Engine {
         const configuration = await Engine.getConfiguration();
 
         logger.info('Update tswebextension configuration...');
-        await this.api.configure(configuration);
+        const result = await this.api.configure(configuration);
+        configurationResultService.set(result);
 
         const rulesCount = this.api.getRulesCount();
         logger.info(`tswebextension configuration is updated. Rules count: ${rulesCount}`);

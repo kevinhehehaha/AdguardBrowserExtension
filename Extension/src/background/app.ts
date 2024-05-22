@@ -66,6 +66,10 @@ import { SettingOption } from './schema';
 import { getRunInfo } from './utils';
 import { contextMenuEvents, settingsEvents } from './events';
 import { KeepAlive } from './keep-alive';
+import {
+    configurationResultService,
+    ConfigurationResultService
+} from './services/configuration-result/mv3/configuration-result';
 
 /**
  * This class is app entry point.
@@ -89,6 +93,7 @@ export class App {
         // We will remove it once engine initialization becomes faster.
         KeepAlive.init();
 
+        // FIXME: Uncomment or remove
         // Reads persisted data from session storage.
         // await Engine.api.initStorage();
 
@@ -126,6 +131,8 @@ export class App {
 
         // Initializes Settings storage data
         await SettingsApi.init();
+
+        configurationResultService.init();
 
         /**
          * When the extension is enabled, disabled and re-enabled during the user session,
