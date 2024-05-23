@@ -719,14 +719,50 @@
     "options_rule_limits_dynamic_regex": {
         "message": "Regex rules — included in the above"
     },
-    "options_rule_limits_static": {
+    "options_rule_limits_static_rulesets": {
         "message": "Static rulesets"
     },
-    "options_rule_limits_static_builtin": {
+    "options_rule_limits_static_rulesets_builtin": {
         "message": "Built-in filters, such as Block annoyances or Language-specific filters"
+    },
+    "options_rule_limits_static_rules": {
+        "message": "Static rules"
+    },
+    "options_rule_limits_static_rules_all": {
+        "message": "Rules from built-in filters. All extensions in your Chrome browser can use 150,000 static rules at once"
+    },
+    "options_rule_limits_static_rules_regex": {
+        "message": "Regex rules — included in the above"
     },
     "options_rule_limits_numbers": {
         "message": "%cur% of %max%"
+    },
+    "options_rule_limits_warning_title": {
+        "message": "The browser has modified the list of active filters"
+    },
+    "options_rule_limits_warning_explanation_title": {
+        "message": "What happened?"
+    },
+    "options_rule_limits_warning_explanation_description": {
+        "message": "The limit of active built-in rules was exceeded after an update or adding a new extension. As per Manifest V3, your Chrome browser reacted by disabling all the extension's built-in filters except the default ones."
+    },
+    "options_rule_limits_warning_enabled_before_title": {
+        "message": "Filters enabled before the update"
+    },
+    "options_rule_limits_warning_enabled_now_title": {
+        "message": "Filters enabled now"
+    },
+    "options_rule_limits_warning_actions_title": {
+        "message": "Your possible actions"
+    },
+    "options_rule_limits_warning_actions_delete_filters": {
+        "message": "Option 1. Delete unnecessary ad-blocking extensions from your browser. To reactivate the filters mentioned in the \"Filters enabled before the update\" section, click reactivate filters."
+    },
+    "options_rule_limits_warning_actions_install_app": {
+        "message": "Option 2. Install the AdGuard Ad Blocker app: it has no restrictions on filtering rules. Get AdGuard for Mac"
+    },
+    "options_rule_limits_warning_actions_close_warning": {
+        "message": "Option 3. If you're satisfied with the currently enabled default filter(s), close this warning."
     },
     "options_show_adguard_full_version_title": {
         "message": "Show information on the AdGuard full version"

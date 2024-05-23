@@ -49,6 +49,7 @@ import {
     WASTE_CHARACTERS,
 } from '../../../common/constants';
 
+
 const savingAllowlistService = createSavingService({
     id: 'allowlist',
     services: {
@@ -114,6 +115,19 @@ const getOptionsDataWithRetry = async () => {
     return innerRetry(TOTAL_RETRY_TIMES);
 };
 
+const DEFAULT_RULES_LIMITS = {
+    userRulesEnabledCount: 0,
+    userRulesMaximumCount: 0,
+    userRulesRegexpsEnabledCount: 0,
+    userRulesRegexpsMaximumCount: 0,
+    staticFiltersEnabledCount: 0,
+    staticFiltersMaximumCount: 0,
+    staticRulesEnabledCount: 0,
+    staticRulesMaximumCount: 0,
+    staticRulesRegexpsEnabledCount: 0,
+    staticRulesRegexpsMaxCount: 0,
+}
+
 class SettingsStore {
     KEYS = {
         ALLOW_ACCEPTABLE_ADS: 'allowAcceptableAds',
@@ -171,17 +185,7 @@ class SettingsStore {
 
     @observable filterIdSelectedForConsent = null;
 
-    // FIXME consider moving to the separate store
-    @observable userRulesEnabledCount = 0;
-
-    @observable userRulesMaximumCount = 0;
-
-    @observable userRulesRegexpsEnabledCount = 0;
-
-    @observable userRulesRegexpsMaximumCount = 0;
-
-    @observable staticFiltersEnabledCount = 0;
-    @observable staticFiltersMaximumCount = 0;
+    @observable rulesLimits = DEFAULT_RULES_LIMITS;
 
     constructor(rootStore) {
         makeObservable(this);
@@ -202,14 +206,9 @@ class SettingsStore {
         const rulesLimits = await messenger.getRulesLimits();
 
         runInAction(() => {
-            this.userRulesEnabledCount = rulesLimits.userRulesEnabledCount;
-            this.userRulesMaximumCount = rulesLimits.userRulesMaximumCount;
-            this.userRulesRegexpsEnabledCount = rulesLimits.userRulesRegexpsEnabledCount;
-            this.userRulesRegexpsMaximumCount = rulesLimits.userRulesRegexpsMaximumCount;
-            this.staticFiltersEnabledCount = rulesLimits.staticFiltersEnabledCount;
-            this.staticFiltersMaximumCount = rulesLimits.staticFiltersMaximumCount;
+            this.rulesLimits = rulesLimits;
         });
-    };
+    }
 
     @action
     async requestOptionsData(firstRender) {
