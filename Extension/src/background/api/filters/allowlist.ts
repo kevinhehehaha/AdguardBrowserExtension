@@ -17,9 +17,7 @@
  */
 import zod from 'zod';
 
-import { tabsApi, getDomain } from '@adguard/tswebextension/mv3';
-// import { tabsApi as tsWebExtTabsApi, getDomain } from '@adguard/tswebextension';
-
+import { tabsApi, getDomain } from '../../tswebextension';
 import { logger } from '../../../common/logger';
 import { SettingOption } from '../../schema';
 import { listeners } from '../../notifier';

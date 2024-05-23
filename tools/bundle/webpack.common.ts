@@ -118,7 +118,7 @@ export const genCommonConfig = (browserConfig: BrowserConfig): Configuration => 
                 runtime: false,
             },
             [CONTENT_SCRIPT_START_OUTPUT]: {
-                import: CONTENT_SCRIPT_START_PATH,
+                import: path.resolve(CONTENT_SCRIPT_START_PATH, `mv${manifestVersion}.ts`),
                 runtime: false,
             },
             [ASSISTANT_INJECT_OUTPUT]: {
@@ -187,9 +187,17 @@ export const genCommonConfig = (browserConfig: BrowserConfig): Configuration => 
             extensions: ['.*', '.js', '.jsx', '.ts', '.tsx'],
             symlinks: false,
             alias: {
+                'tswebextension': path.resolve(
+                    __dirname,
+                    `../../Extension/src/background/tswebextension/tswebextension-mv${manifestVersion}.ts`,
+                ),
                 'engine': path.resolve(
                     __dirname,
                     `../../Extension/src/background/engine/engine-mv${manifestVersion}.ts`,
+                ),
+                'content-script': path.resolve(
+                    __dirname,
+                    `../../Extension/pages/content-script-start/mv${manifestVersion}.ts`,
                 ),
             },
         },

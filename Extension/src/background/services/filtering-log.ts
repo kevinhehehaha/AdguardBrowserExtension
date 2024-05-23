@@ -35,8 +35,7 @@ import {
     StealthActionEvent,
     CspReportBlockedEvent,
     getDomain,
-} from '@adguard/tswebextension/mv3';
-
+} from '../tswebextension';
 import { messageHandler } from '../message-handler';
 import {
     ClearEventsByTabIdMessage,

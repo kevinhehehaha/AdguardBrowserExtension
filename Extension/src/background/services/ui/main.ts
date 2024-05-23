@@ -22,16 +22,7 @@ import {
     defaultFilteringLog,
     FilteringEventType,
     ApplyBasicRuleEvent,
-} from '@adguard/tswebextension/mv3';
-
-// FIXME revert for mv2 and disable for mv3
-// import {
-//     ApplyBasicRuleEvent,
-//     defaultFilteringLog,
-//     FilteringEventType,
-//     tabsApi as tsWebExtTabApi,
-// } from '@adguard/tswebextension';
-
+} from '../../tswebextension';
 import { logger } from '../../../common/logger';
 import { messageHandler } from '../../message-handler';
 import {

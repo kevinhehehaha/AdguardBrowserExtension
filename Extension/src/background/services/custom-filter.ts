@@ -21,8 +21,7 @@ import {
     MAIN_FRAME_ID,
     isHttpOrWsRequest,
     tabsApi,
-} from '@adguard/tswebextension/mv3';
-
+} from '../tswebextension';
 import { SUBSCRIBE_OUTPUT } from '../../../../constants';
 import { NotifierType, BACKGROUND_TAB_ID } from '../../common/constants';
 import {

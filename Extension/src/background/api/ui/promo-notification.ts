@@ -17,8 +17,7 @@
  */
 import browser from 'webextension-polyfill';
 
-import { tabsApi } from '@adguard/tswebextension/mv3';
-
+import { tabsApi } from '../../tswebextension';
 import { UserAgent } from '../../../common/user-agent';
 import {
     notificationStorage,
