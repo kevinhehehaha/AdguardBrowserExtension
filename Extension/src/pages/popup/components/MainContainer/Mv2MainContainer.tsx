@@ -16,26 +16,31 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react';
+import React, { useContext } from 'react';
+import { observer } from 'mobx-react';
 
-import PropTypes from 'prop-types';
-import cn from 'classnames';
+import { Main } from '../Main';
+import { ViewState } from '../../constants';
+import { StatsChart } from '../Stats/StatsChart';
+import { popupStore } from '../../stores/PopupStore';
 
-import './tooltip.pcss';
+import './main-container.pcss';
 
-export const Tooltip = ({ text, visible }) => {
+const Mv2MainContainer = observer(() => {
+    const store = useContext(popupStore);
+
+    const contentMapMv2 = {
+        [ViewState.Actions]: Main,
+        [ViewState.Stats]: StatsChart,
+    };
+
+    const ContentMv2 = contentMapMv2[store.viewState];
+
     return (
-        <div className={cn('tooltip', visible ? 'tooltip--on' : 'tooltip--off')}>
-            {text}
+        <div className="main-container">
+            <ContentMv2 />
         </div>
     );
-};
+});
 
-Tooltip.propTypes = {
-    text: PropTypes.string.isRequired,
-    visible: PropTypes.bool,
-};
-
-Tooltip.defaultProps = {
-    visible: true,
-};
+export { Mv2MainContainer as MainContainer };

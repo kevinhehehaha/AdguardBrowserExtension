@@ -16,4 +16,28 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { AttachmentPortal } from './AttacmentPortal';
+import React from 'react';
+
+import cn from 'classnames';
+
+import './tooltip.pcss';
+
+type TooltipParams = {
+    /**
+     * Tooltip text.
+     */
+    text?: string,
+
+    /**
+     * Tooltip visibility flag.
+     */
+    visible?: boolean,
+};
+
+export const Tooltip = ({ text, visible }: TooltipParams) => {
+    return (
+        <div className={cn('tooltip', visible ? 'tooltip--on' : 'tooltip--off')}>
+            {text}
+        </div>
+    );
+};
