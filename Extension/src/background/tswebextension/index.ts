@@ -16,8 +16,8 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// NOTE: Here important to use 'engine' without prefix "@adguard/", because it
-// is an alias for manifest-specific re-export.
+// NOTE: Here important to use 'tswebextension' without prefix "@adguard/",
+// because it is an alias for manifest-specific re-export.
 // It will be replaced with mv2 or mv3 version during the build via webpack.
 // eslint-disable-next-line import/export
 export * from 'tswebextension';

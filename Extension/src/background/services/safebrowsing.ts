@@ -19,10 +19,11 @@ import browser, { WebRequest } from 'webextension-polyfill';
 
 import { RequestType } from '@adguard/tsurlfilter/es/request-type';
 
-// Note: While SafeBrowsingService is not using in MV3, we still need to use
+// Note: While SafeBrowsingService is not used in MV3, we still need to use
 // alias here to get "clean" build (without calls to window object etc.),
 // because if use '@adguard/tswebextension' here - webpack will not correct
-// treeshaked this (SafebrowsingService) component as unused.
+// treeshaked and excluded from output build this (SafebrowsingService)
+// component as unused.
 import { type RequestData, tabsApi } from 'tswebextension';
 
 import {
