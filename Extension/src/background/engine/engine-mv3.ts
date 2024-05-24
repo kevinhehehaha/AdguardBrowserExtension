@@ -35,10 +35,9 @@ import {
     DocumentBlockApi,
     CustomFilterApi,
 } from '../api';
+
 // FIXME should provide empty implementation for mv2 version
-import {
-    configurationResultService
-} from './services/configuration-result/mv3/configuration-result';
+import { configurationResultService } from '../services/configuration-result/mv3/configuration-result';
 
 import { TsWebExtensionEngine } from './interface';
 
