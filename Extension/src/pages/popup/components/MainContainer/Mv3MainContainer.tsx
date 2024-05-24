@@ -16,12 +16,19 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Variable passed from webpack that will be primitive at runtime.
-declare const IS_FIREFOX_AMO: boolean;
+import React from 'react';
+import { observer } from 'mobx-react';
 
-// Variables passed from webpack that will be primitive at runtime.
-declare const IS_RELEASE: boolean;
-declare const IS_BETA: boolean;
+import { Main } from '../Main';
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-declare const __IS_MV3__: boolean;
+import './main-container.pcss';
+
+const Mv3MainContainer = observer(() => {
+    return (
+        <div className="main-container">
+            <Main />
+        </div>
+    );
+});
+
+export { Mv3MainContainer as MainContainer };

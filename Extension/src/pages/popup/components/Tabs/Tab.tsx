@@ -16,21 +16,37 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useContext } from 'react';
-import { observer } from 'mobx-react';
+import React from 'react';
 
-import { SavingButton } from '../SavingButton';
+import classnames from 'classnames';
 
-import { userRulesEditorStore } from './UserRulesEditorStore';
+type TabParams = {
+    /**
+     * Tab title.
+     */
+    title: string,
 
-export const UserRulesSavingButton = observer(({ onClick }) => {
-    const store = useContext(userRulesEditorStore);
+    /**
+     * Whether the tab is active.
+     */
+    active: boolean,
+
+    /**
+     * Click handler.
+     */
+    onClick: () => void,
+};
+
+export const Tab = ({ title, active, onClick }: TabParams) => {
+    const tabClass = classnames('tabs__tab', { tabs__tab_active: active });
 
     return (
-        <SavingButton
+        <button
+            type="button"
+            className={tabClass}
             onClick={onClick}
-            contentChanged={store.userRulesEditorContentChanged}
-            savingState={store.savingUserRulesState}
-        />
+        >
+            {title}
+        </button>
     );
-});
+};

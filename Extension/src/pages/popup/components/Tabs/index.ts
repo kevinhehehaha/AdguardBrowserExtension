@@ -16,12 +16,9 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Variable passed from webpack that will be primitive at runtime.
-declare const IS_FIREFOX_AMO: boolean;
+// !IMPORTANT!
+// export './Tabs' will be replaced during webpack compilation
+// with NormalModuleReplacementPlugin to proper implementation
+// from './Mv2Tabs' or './Mv3Tabs'
 
-// Variables passed from webpack that will be primitive at runtime.
-declare const IS_RELEASE: boolean;
-declare const IS_BETA: boolean;
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-declare const __IS_MV3__: boolean;
+export { Tabs } from './AbstractTabs';

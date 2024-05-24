@@ -16,24 +16,15 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react';
-
-import { Popover } from '../../../../common/components/ui/Popover';
-
-import { FilterTag } from './FilterTag';
-
-export const FilterTags = ({ tags }) => {
-    if (tags.length === 0) {
-        return null;
-    }
-
-    return (
-        <div className="filter__tags">
-            {tags.map((tag) => (
-                <Popover text={tag.description} key={tag.tagId}>
-                    <FilterTag tag={tag} />
-                </Popover>
-            ))}
-        </div>
-    );
+/**
+ * This component is needed to be replaced during webpack compilation
+ * with NormalModuleReplacementPlugin to proper implementation
+ * from './Mv2MainContainer' or './Mv3MainContainer'.
+ *
+ * @throws An error if the component is not replaced.
+ */
+const AbstractMainContainer = () => {
+    throw new Error('Seems like webpack did not inject proper MainContainer component');
 };
+
+export { AbstractMainContainer as MainContainer };

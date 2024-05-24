@@ -33,7 +33,7 @@
         "message": "Enable"
     },
     "popup_header_cta_link": {
-        "message": "Want to block more?"
+        "message": "How to enhance protection"
     },
     "popup_header_update_filters": {
         "message": "Check for filter updates"
@@ -60,7 +60,7 @@
         "message": "Disable notifications"
     },
     "popup_adguard_footer_title": {
-        "message": "Get AdGuard for your mobile"
+        "message": "Protect your mobile device"
     },
     "options_popup_call_to_action": {
         "message": "Enter the valid URL or file path of the filter into the field above."
@@ -141,10 +141,10 @@
         "message": "Modified rules: %rules_count%"
     },
     "filtering_log_stealth_rules": {
-        "message": "Tracking Protection rules: %rules_count%"
+        "message": "Tracking protection rules: %rules_count%"
     },
     "filtering_log_privacy_applied_rules": {
-        "message": "Tracking Protection applied"
+        "message": "Tracking protection applied"
     },
     "filtering_log_in_allowlist": {
         "message": "The site is allowed"
@@ -211,6 +211,9 @@
     },
     "options_empty_custom_filter": {
         "message": "You don't have any custom filters yet"
+    },
+    "options_loader_applying_changes": {
+        "message": "Applying changes..."
     },
     "options_editor_indicator_saving": {
         "message": "Saving..."
@@ -483,7 +486,7 @@
         "message": "Rules:"
     },
     "filtering_modal_privacy": {
-        "message": "Tracking Protection:"
+        "message": "Tracking protection:"
     },
     "filtering_modal_filter": {
         "message": "Filter:"
@@ -648,7 +651,7 @@
         "message": "Leave feedback"
     },
     "options_privacy": {
-        "message": "Tracking Protection"
+        "message": "Tracking protection"
     },
     "options_update_antibanner_filters": {
         "message": "Check for filter updates"
@@ -804,7 +807,7 @@
         "message": "Uses shorter versions of filters with only the most popular rules to save traffic. Better suited to mobile browsers"
     },
     "options_privacy_title": {
-        "message": "Tracking Protection"
+        "message": "Tracking protection"
     },
     "options_privacy_desc": {
         "message": "Protect your identity and sensitive personal information from thousands of online trackers by blocking the most popular tracking methods."
@@ -858,7 +861,7 @@
         "message": "Block trackers"
     },
     "options_block_known_trackers_description": {
-        "message": "Block trackers and web analytics tools with AdGuard Tracking Protection filter."
+        "message": "Block trackers and web analytics tools with AdGuard Tracking protection filter."
     },
     "options_third_party_title": {
         "message": "Self-destruction of third-party cookies"

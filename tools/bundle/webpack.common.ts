@@ -21,11 +21,15 @@ import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
-import { Configuration, DefinePlugin } from 'webpack';
+import {
+    Configuration,
+    DefinePlugin,
+    NormalModuleReplacementPlugin,
+} from 'webpack';
 
 import {
     BUILD_PATH,
-    Env,
+    BuildTargetEnv,
     Browser,
     BUILD_ENV,
     BrowserConfig,
@@ -74,7 +78,9 @@ const EDITOR_PATH = path.resolve(__dirname, '../../Extension/src/pages/common/co
 const OUTPUT_PATH = config.outputPath;
 
 export const genCommonConfig = (browserConfig: BrowserConfig): Configuration => {
-    const isDev = BUILD_ENV === Env.Dev;
+    const isDev = BUILD_ENV === BuildTargetEnv.Dev;
+    const manifestVersion = browserConfig.browser === Browser.ChromeMv3 ? 3 : 2;
+
     return {
         mode: config.mode,
         target: 'web',
@@ -184,6 +190,12 @@ export const genCommonConfig = (browserConfig: BrowserConfig): Configuration => 
             },
             extensions: ['.*', '.js', '.jsx', '.ts', '.tsx'],
             symlinks: false,
+            alias: {
+                'engine': path.resolve(
+                    __dirname,
+                    `../../Extension/src/background/engine/engine-mv${manifestVersion}.ts`,
+                ),
+            },
         },
         module: {
             rules: [
@@ -352,10 +364,36 @@ export const genCommonConfig = (browserConfig: BrowserConfig): Configuration => 
                 IS_FIREFOX_AMO: browserConfig.browser === Browser.FirefoxAmo,
                 // TODO consider making this variable to be less common used
                 //  (e.g., make it to be __IS_RELEASE__ instead of IS_RELEASE)
-                IS_RELEASE: BUILD_ENV === Env.Release,
-                IS_BETA: BUILD_ENV === Env.Beta,
+                IS_RELEASE: BUILD_ENV === BuildTargetEnv.Release,
+                IS_BETA: BUILD_ENV === BuildTargetEnv.Beta,
                 __IS_MV3__: browserConfig.browser === Browser.ChromeMv3,
             }),
         ],
     };
 };
+
+/**
+ * Regexp to match the path to the abstract components that should be replaced for mv2 and mv3.
+ */
+const replacementMatchRegexp = new RegExp(
+    `\\.\\/Abstract(${
+        [
+            'Tabs',
+            'MainContainer',
+        ].join('|')
+    })`,
+);
+
+export const Mv2ReplacementPlugin = new NormalModuleReplacementPlugin(
+    replacementMatchRegexp,
+    ((resource: any) => {
+        resource.request = resource.request.replace(/\.\/Abstract(.*)/, './Mv2$1');
+    }),
+);
+
+export const Mv3ReplacementPlugin = new NormalModuleReplacementPlugin(
+    replacementMatchRegexp,
+    ((resource: any) => {
+        resource.request = resource.request.replace(/\.\/Abstract(.*)/, './Mv3$1');
+    }),
+);

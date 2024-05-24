@@ -16,12 +16,29 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Variable passed from webpack that will be primitive at runtime.
-declare const IS_FIREFOX_AMO: boolean;
+import React from 'react';
 
-// Variables passed from webpack that will be primitive at runtime.
-declare const IS_RELEASE: boolean;
-declare const IS_BETA: boolean;
+import { Popover } from '../../../../common/components/ui/Popover';
+import { TagMetadata } from '../../../../../background/schema';
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-declare const __IS_MV3__: boolean;
+import { FilterTag } from './FilterTag';
+
+type FilterTagsParams = {
+    tags: TagMetadata[];
+};
+
+export const FilterTags = ({ tags }: FilterTagsParams) => {
+    if (tags.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="filter__tags">
+            {tags.map((tag) => (
+                <Popover text={tag.description} key={tag.tagId}>
+                    <FilterTag tag={tag} />
+                </Popover>
+            ))}
+        </div>
+    );
+};

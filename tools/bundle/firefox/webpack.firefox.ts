@@ -24,13 +24,13 @@ import { merge } from 'webpack-merge';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { WebpackPluginInstance } from 'webpack';
 
-import { genCommonConfig } from '../webpack.common';
+import { genCommonConfig, Mv2ReplacementPlugin } from '../webpack.common';
 import { updateManifestBuffer } from '../../helpers';
 import {
     Browser,
     BrowserConfig,
     BUILD_ENV,
-    Env,
+    BuildTargetEnv,
 } from '../../constants';
 import {
     BACKGROUND_OUTPUT,
@@ -49,12 +49,13 @@ export const genFirefoxConfig = (browserConfig: BrowserConfig, isWatchMode = fal
     }
 
     let zipFilename = `${browserConfig.browser}.zip`;
-    if (BUILD_ENV === Env.Beta
-        || BUILD_ENV === Env.Release) {
+    if (BUILD_ENV === BuildTargetEnv.Beta
+        || BUILD_ENV === BuildTargetEnv.Release) {
         zipFilename = 'firefox.zip';
     }
 
     const plugins: WebpackPluginInstance[] = [
+        Mv2ReplacementPlugin,
         new CopyWebpackPlugin({
             patterns: [
                 {
