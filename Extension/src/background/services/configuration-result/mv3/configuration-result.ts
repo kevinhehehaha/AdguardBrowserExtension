@@ -1,11 +1,11 @@
 import browser from 'webextension-polyfill';
 
-import { ConfigurationResult } from '@adguard/tswebextension/dist/types/src/lib/mv3/background';
 import {
     TooManyRegexpRulesError,
     TooManyRulesError,
     RULE_SET_NAME_PREFIX,
-    LimitationError,
+    type LimitationError,
+    type ConfigurationResult,
 } from '@adguard/tswebextension/mv3';
 
 import { configurationResultApi } from '../../../api/configuration-result/mv3/configuration-result';
