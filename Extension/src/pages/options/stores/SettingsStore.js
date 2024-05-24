@@ -49,7 +49,6 @@ import {
     WASTE_CHARACTERS,
 } from '../../../common/constants';
 
-
 const savingAllowlistService = createSavingService({
     id: 'allowlist',
     services: {
@@ -126,7 +125,9 @@ const DEFAULT_RULES_LIMITS = {
     staticRulesMaximumCount: 0,
     staticRulesRegexpsEnabledCount: 0,
     staticRulesRegexpsMaxCount: 0,
-}
+    previouslyEnabledFilters: [],
+    nowEnabledFilters: [],
+};
 
 class SettingsStore {
     KEYS = {

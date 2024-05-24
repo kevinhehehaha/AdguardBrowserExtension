@@ -39,9 +39,13 @@ import {
 } from '../api';
 
 // FIXME should provide empty implementation for mv2 version
-import { configurationResultService } from '../services/configuration-result/mv3/configuration-result';
+import {
+    RulesLimitsService,
+    rulesLimitsService
+} from '../services/rules-limits/mv3/rules-limits';
 
 import { TsWebExtensionEngine } from './interface';
+import { CUSTOM_FILTERS_START_ID } from '../../common/constants';
 
 // Because this file is already MV3 replacement module, we can import directly
 // from mv3 tswebextension without using aliases.
@@ -99,12 +103,14 @@ export class Engine implements TsWebExtensionEngine {
 
         logger.info('Start tswebextension...');
         const result = await this.api.start(configuration);
-        configurationResultService.set(result);
+        rulesLimitsService.set(result);
 
         const rulesCount = this.api.getRulesCount();
         logger.info(`tswebextension is started. Rules count: ${rulesCount}`);
         // TODO: remove after frontend refactoring
         listeners.notifyListeners(listeners.RequestFilterUpdated);
+
+        await RulesLimitsService.checkFiltersLimitsChange(this.update.bind(this));
     }
 
     /**
@@ -124,17 +130,21 @@ export class Engine implements TsWebExtensionEngine {
      * Updates tswebextension configuration and after that updates the counter
      * of active rules.
      */
-    async update(): Promise<void> {
+    async update(skipLimitsCheck: boolean = false): Promise<void> {
         const configuration = await Engine.getConfiguration();
 
         logger.info('Update tswebextension configuration...');
         const result = await this.api.configure(configuration);
-        configurationResultService.set(result);
+        rulesLimitsService.set(result);
 
         const rulesCount = this.api.getRulesCount();
         logger.info(`tswebextension configuration is updated. Rules count: ${rulesCount}`);
         // TODO: remove after frontend refactoring
         listeners.notifyListeners(listeners.RequestFilterUpdated);
+
+        if (!skipLimitsCheck) {
+            await RulesLimitsService.checkFiltersLimitsChange(this.update.bind(this));
+        }
     }
 
     /**

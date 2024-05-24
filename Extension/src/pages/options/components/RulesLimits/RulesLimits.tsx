@@ -22,7 +22,7 @@ import { observer } from 'mobx-react';
 import { SettingsSection } from '../Settings/SettingsSection';
 import { reactTranslator } from '../../../../common/translators/reactTranslator';
 import { rootStore } from '../../stores/RootStore';
-import { type IRulesLimits } from '../../../../background/services/configuration-result/mv3/configuration-result';
+import { type IRulesLimits } from '../../../../background/services/rules-limits/mv3/rules-limits';
 
 import { Warning } from './Warning';
 
@@ -35,10 +35,7 @@ export const RulesLimits = observer(() => {
 
     const rulesLimits = settingsStore.rulesLimits as IRulesLimits;
 
-    // FIXME get real data
-    const showWarning = true;
-    const nowEnabled = 'Test is enabled';
-    const wasEnabled = 'Test was enabled';
+    const showWarning = rulesLimits.previouslyEnabledFilters.length > 0;
 
     // FIXME
     const onClickReactivateFilters = () => {
@@ -63,8 +60,8 @@ export const RulesLimits = observer(() => {
         >
             { showWarning && (
                 <Warning
-                    nowEnabled={nowEnabled}
-                    wasEnabled={wasEnabled}
+                    nowEnabled={rulesLimits.nowEnabledFilters.join(',')}
+                    wasEnabled={rulesLimits.previouslyEnabledFilters.join(',')}
                     onClickReactivateFilters={onClickReactivateFilters}
                     onClickCloseWarning={onClickCloseWarning}
                 />
