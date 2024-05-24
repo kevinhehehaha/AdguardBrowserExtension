@@ -70,6 +70,9 @@ export class SafebrowsingService {
         const isFilteringDisabled = SettingsApi.getSetting(SettingOption.DisableFiltering);
 
         if (!context
+            // This check is needed only for MV3 version.
+            // @ts-ignore
+            || !context.statusCode
             || isSafebrowsingDisabled
             || isFilteringDisabled) {
             return;
@@ -77,6 +80,8 @@ export class SafebrowsingService {
 
         const {
             requestType,
+            // Disable typechecking only for MV3 version.
+            // @ts-ignore
             statusCode,
             requestUrl,
             referrerUrl,
