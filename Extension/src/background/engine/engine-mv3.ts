@@ -37,15 +37,10 @@ import {
     DocumentBlockApi,
     CustomFilterApi,
 } from '../api';
-
 // FIXME should provide empty implementation for mv2 version
-import {
-    RulesLimitsService,
-    rulesLimitsService
-} from '../services/rules-limits/mv3/rules-limits';
+import { RulesLimitsService, rulesLimitsService } from '../services/rules-limits/mv3/rules-limits';
 
 import { TsWebExtensionEngine } from './interface';
-import { CUSTOM_FILTERS_START_ID } from '../../common/constants';
 
 // Because this file is already MV3 replacement module, we can import directly
 // from mv3 tswebextension without using aliases.
@@ -129,6 +124,8 @@ export class Engine implements TsWebExtensionEngine {
     /**
      * Updates tswebextension configuration and after that updates the counter
      * of active rules.
+     *
+     * @param skipLimitsCheck Skip limits check.
      */
     async update(skipLimitsCheck: boolean = false): Promise<void> {
         const configuration = await Engine.getConfiguration();

@@ -39,11 +39,13 @@ export const RulesLimits = observer(() => {
 
     // FIXME
     const onClickReactivateFilters = () => {
+        // eslint-disable-next-line no-console
         console.log('Reactivate filters');
     };
 
     // FIXME
     const onClickCloseWarning = () => {
+        // eslint-disable-next-line no-console
         console.log('Close warning');
     };
 

@@ -66,10 +66,7 @@ import { SettingOption } from './schema';
 import { getRunInfo } from './utils';
 import { contextMenuEvents, settingsEvents } from './events';
 import { KeepAlive } from './keep-alive';
-import {
-    rulesLimitsService,
-    RulesLimitsService
-} from './services/rules-limits/mv3/rules-limits';
+import { rulesLimitsService } from './services/rules-limits/mv3/rules-limits';
 
 /**
  * This class is app entry point.
