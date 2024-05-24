@@ -24,7 +24,7 @@ import { RequestType } from '@adguard/tsurlfilter/es/request-type';
 // because if use '@adguard/tswebextension' here - webpack will not correct
 // treeshaked and excluded from output build this (SafebrowsingService)
 // component as unused.
-import { type RequestData, tabsApi } from 'tswebextension';
+import { type RequestData, tabsApi as tsWebExtTabsApi } from 'tswebextension';
 
 import {
     SafebrowsingApi,
@@ -98,7 +98,7 @@ export class SafebrowsingService {
                     }
 
                     // Chromium doesn't allow open extension url in incognito mode
-                    if (tabsApi.isIncognitoTab(tabId) && UserAgent.isChromium) {
+                    if (tsWebExtTabsApi.isIncognitoTab(tabId) && UserAgent.isChromium) {
                         // Closing tab before opening a new one may lead to browser crash (Chromium)
                         browser.tabs.create({ url: safebrowsingUrl })
                             .then(() => {

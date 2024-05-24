@@ -18,7 +18,7 @@
 
 import {
     TabContext,
-    tabsApi,
+    tabsApi as tsWebExtTabsApi,
     defaultFilteringLog,
     FilteringEventType,
     SendRequestEvent,
@@ -92,9 +92,9 @@ export class FilteringLogService {
             FilteringLogService.onSetFilteringLogWindowState,
         );
 
-        tabsApi.onCreate.subscribe(FilteringLogService.onTabCreate);
-        tabsApi.onUpdate.subscribe(FilteringLogService.onTabUpdate);
-        tabsApi.onDelete.subscribe(FilteringLogService.onTabRemove);
+        tsWebExtTabsApi.onCreate.subscribe(FilteringLogService.onTabCreate);
+        tsWebExtTabsApi.onUpdate.subscribe(FilteringLogService.onTabUpdate);
+        tsWebExtTabsApi.onDelete.subscribe(FilteringLogService.onTabRemove);
 
         defaultFilteringLog.addEventListener(FilteringEventType.SendRequest, FilteringLogService.onSendRequest);
         defaultFilteringLog.addEventListener(FilteringEventType.TabReload, FilteringLogService.onTabReload);

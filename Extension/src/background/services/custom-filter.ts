@@ -20,7 +20,7 @@ import browser, { WebNavigation } from 'webextension-polyfill';
 import {
     MAIN_FRAME_ID,
     isHttpOrWsRequest,
-    tabsApi,
+    tabsApi as tsWebExtTabsApi,
 } from '../tswebextension';
 import { SUBSCRIBE_OUTPUT } from '../../../../constants';
 import { NotifierType, BACKGROUND_TAB_ID } from '../../common/constants';
@@ -109,7 +109,7 @@ export class CustomFilterService {
             return;
         }
 
-        const frame = tabsApi.getTabFrame(tabId, frameId);
+        const frame = tsWebExtTabsApi.getTabFrame(tabId, frameId);
 
         if (!frame) {
             return;
