@@ -738,13 +738,13 @@
         "message": "Static rules"
     },
     "options_rule_limits_static_rules_all": {
-        "message": "Rules from built-in filters. All extensions in your Chrome browser can use 150,000 static rules at once"
+        "message": "Rules from built-in filters"
     },
     "options_rule_limits_static_rules_regex": {
         "message": "Regex rules — included in the above"
     },
     "options_rule_limits_numbers": {
-        "message": "%cur% of %max%"
+        "message": "%current% of %maximum%"
     },
     "options_rule_limits_warning_title": {
         "message": "The browser has modified the list of active filters"
@@ -768,10 +768,13 @@
         "message": "Option 1. Delete unnecessary ad-blocking extensions from your browser. To reactivate the filters mentioned in the \"Filters enabled before the update\" section, click <a>reactivate filters.</a>"
     },
     "options_rule_limits_warning_actions_install_app": {
-        "message": "Option 2. Install the AdGuard Ad Blocker app: it has no restrictions on filtering rules. Get AdGuard for Mac"
+        "message": "Option 2. Install the AdGuard Ad Blocker app: it has no restrictions on filtering rules. <a>Get AdGuard for Mac<\/a>"
     },
-    "options_rule_limits_warning_actions_close_warning": {
-        "message": "Option 3. If you're satisfied with the currently enabled default filter(s), <a>close this warning.</a>"
+    "options_rule_limits_warning_actions_close_warning_one_filter": {
+        "message": "Option 3. If you're satisfied with the currently enabled default filter, <a>close this warning.</a>"
+    },
+    "options_rule_limits_warning_actions_close_warning_multiple_filters": {
+        "message": "Option 3. If you're satisfied with the currently enabled default filters, <a>close this warning.</a>"
     },
     "options_show_adguard_full_version_title": {
         "message": "Show information on the AdGuard full version"

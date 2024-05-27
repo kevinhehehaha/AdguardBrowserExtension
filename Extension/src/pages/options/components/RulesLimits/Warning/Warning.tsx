@@ -21,10 +21,12 @@
 import React from 'react';
 
 import { reactTranslator } from '../../../../../common/translators/reactTranslator';
+import { translator } from '../../../../../common/translators/translator';
+import { Icon } from '../../../../common/components/ui/Icon';
 
 type WarningProps = {
-    nowEnabled: string,
-    wasEnabled: string,
+    nowEnabled: number[],
+    wasEnabled: number[],
     onClickReactivateFilters: () => void,
     onClickCloseWarning: () => void,
 };
@@ -37,45 +39,52 @@ export const Warning = ({
 }: WarningProps) => {
     return (
         <>
-            <div className="warning">
-                <div className="title">
-                    {reactTranslator.getMessage('options_limits_warning_title')}
-                </div>
-                <div className="item">
-                    <div className="title">
-                        {reactTranslator.getMessage('options_rule_limits_warning_explanation_title')}
-                    </div>
-                    <div className="description">
-                        {reactTranslator.getMessage('options_rule_limits_warning_explanation_description')}
+            <div className="rules-limits rules-limits__warning">
+                <div className="rules-limits__warning-title">
+                    <Icon
+                        id="#info"
+                        classname="rules-limits__warning-title--icon"
+                    />
+                    <div className="rules-limits__warning-title--text">
+                        {translator.getMessage('options_rule_limits_warning_title')}
                     </div>
                 </div>
-                <div className="item">
-                    <div className="title">
-                        {reactTranslator.getMessage('options_rule_limits_warning_enabled_before_title')}
+                <div className="rules-limits__section">
+                    <div className="rules-limits__section-title">
+                        {translator.getMessage('options_rule_limits_warning_explanation_title')}
                     </div>
-                    <div className="description">
-                        {wasEnabled}
-                    </div>
-                </div>
-                <div className="item">
-                    <div className="title">
-                        {reactTranslator.getMessage('options_rule_limits_warning_enabled_now_title')}
-                    </div>
-                    <div className="description">
-                        {nowEnabled}
+                    <div className="rules-limits__group rules-limits__text--gray">
+                        {translator.getMessage('options_rule_limits_warning_explanation_description')}
                     </div>
                 </div>
-                <div className="item">
-                    <div className="title">
-                        {reactTranslator.getMessage('options_rule_limits_warning_actions_title')}
+                <div className="rules-limits__section">
+                    <div className="rules-limits__section-title">
+                        {translator.getMessage('options_rule_limits_warning_enabled_before_title')}
                     </div>
-                    <div className="description">
-                        <div className="option">
+                    <div className="rules-limits__group rules-limits__text--gray">
+                        {wasEnabled.join(', ')}
+                    </div>
+                </div>
+                <div className="rules-limits__section">
+                    <div className="rules-limits__section-title">
+                        {translator.getMessage('options_rule_limits_warning_enabled_now_title')}
+                    </div>
+                    <div className="rules-limits__group rules-limits__text--gray">
+                        {nowEnabled.join(', ')}
+                    </div>
+                </div>
+                <div className="rules-limits__section">
+                    <div className="rules-limits__section-title">
+                        {translator.getMessage('options_rule_limits_warning_actions_title')}
+                    </div>
+                    <div className="rules-limits__group rules-limits__text--gray">
+                        <div className="rules-limits__group-option">
                             {reactTranslator.getMessage('options_rule_limits_warning_actions_delete_filters', {
                                 a: (chunks: string) => (
                                     <a
                                         target="_blank"
                                         rel="noreferrer"
+                                        className="rules-limits__group-option-link"
                                         onClick={onClickReactivateFilters}
                                     >
                                         {chunks}
@@ -83,23 +92,42 @@ export const Warning = ({
                                 ),
                             })}
                         </div>
-                        <div className="option">
-                            {reactTranslator.getMessage('options_rule_limits_warning_actions_install_app')}
-                        </div>
-                        <div className="option">
-                            {reactTranslator.getMessage('options_rule_limits_warning_actions_close_warning', {
-                                a: (chunks: string) => {
-                                    return (
-                                        <a
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            onClick={onClickCloseWarning}
-                                        >
-                                            {chunks}
-                                        </a>
-                                    );
-                                },
+                        <div className="rules-limits__group-option">
+                            {reactTranslator.getMessage('options_rule_limits_warning_actions_install_app', {
+                                a: (chunks: string) => (
+                                    <a
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        // FIXME: update href
+                                        // FIXME: use Forward.get() for the url
+                                        href="https://example.com"
+                                        className="rules-limits__group-option-link rules-limits__text--gray"
+                                    >
+                                        {chunks}
+                                    </a>
+                                ),
                             })}
+                        </div>
+                        <div className="rules-limits__group-option">
+                            {reactTranslator.getMessage(
+                                nowEnabled.length > 0
+                                    ? 'options_rule_limits_warning_actions_close_warning_multiple_filters'
+                                    : 'options_rule_limits_warning_actions_close_warning_one_filter',
+                                {
+                                    a: (chunks: string) => {
+                                        return (
+                                            <a
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="rules-limits__group-option-link"
+                                                onClick={onClickCloseWarning}
+                                            >
+                                                {chunks}
+                                            </a>
+                                        );
+                                    },
+                                },
+                            )}
                         </div>
                     </div>
                 </div>

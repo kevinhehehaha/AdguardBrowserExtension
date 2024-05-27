@@ -21,12 +21,15 @@ import { observer } from 'mobx-react';
 
 import { SettingsSection } from '../Settings/SettingsSection';
 import { reactTranslator } from '../../../../common/translators/reactTranslator';
+import { translator } from '../../../../common/translators/translator';
 import { rootStore } from '../../stores/RootStore';
 import { type IRulesLimits } from '../../../../background/services/rules-limits/mv3/rules-limits';
 import { messenger } from '../../../services/messenger';
 import { MessageType } from '../../../../common/messages';
 
 import { Warning } from './Warning';
+
+import './rules-limits.pcss';
 
 export const RulesLimits = observer(() => {
     const { settingsStore } = useContext(rootStore);
@@ -51,67 +54,59 @@ export const RulesLimits = observer(() => {
 
     return (
         <SettingsSection
-            title={reactTranslator.getMessage('options_rule_limits')}
+            title={translator.getMessage('options_rule_limits')}
             description={(
                 <>
-                    <div>{reactTranslator.getMessage('options_rule_limits_description')}</div>
-                    {/* FIXME add link */}
-                    <div>{reactTranslator.getMessage('options_rule_limits_description_link')}</div>
+                    <div>{translator.getMessage('options_rule_limits_description')}</div>
+                    <div className="title__desc--additional">
+                        <a
+                            target="_blank"
+                            rel="noreferrer"
+                            // FIXME: use Forward.get() for the url
+                            // FIXME: update href
+                            href="https://example.com"
+                            className="title__desc--additional-link"
+                        >
+                            {translator.getMessage('options_rule_limits_description_link')}
+                        </a>
+                    </div>
                 </>
             )}
         >
-            { showWarning && (
+            {showWarning && (
                 <Warning
-                    nowEnabled={rulesLimits.nowEnabledFilters.join(',')}
-                    wasEnabled={rulesLimits.previouslyEnabledFilters.join(',')}
+                    nowEnabled={rulesLimits.nowEnabledFilters}
+                    wasEnabled={rulesLimits.previouslyEnabledFilters}
                     onClickReactivateFilters={onClickReactivateFilters}
                     onClickCloseWarning={onClickCloseWarning}
                 />
-            ) }
+            )}
             <div className="rules-limits">
                 <div className="rules-limits__section">
                     <div
                         className="rules-limits__section-title"
                     >
-                        {reactTranslator.getMessage('options_rule_limits_dynamic')}
+                        {translator.getMessage('options_rule_limits_dynamic')}
                     </div>
                     <div className="rules-limits__group">
-                        <div className="rules-limits__group-title">
-                            {reactTranslator.getMessage('options_rule_limits_dynamic_user_rules')}
+                        <div className="rules-limits__text--gray">
+                            {translator.getMessage('options_rule_limits_dynamic_user_rules')}
                         </div>
-                        <div className="rules-limits__group-limits">
+                        <div className="rules-limits__group-limits rules-limits__text--orange">
                             {reactTranslator.getMessage('options_rule_limits_numbers', {
-                                cur: rulesLimits.userRulesEnabledCount,
-                                max: rulesLimits.userRulesMaximumCount,
+                                current: rulesLimits.userRulesEnabledCount,
+                                maximum: rulesLimits.userRulesMaximumCount,
                             })}
                         </div>
                     </div>
                     <div className="rules-limits__group">
-                        <div className="rules-limits__group-title">
-                            {reactTranslator.getMessage('options_rule_limits_dynamic_regex')}
+                        <div className="rules-limits__text--gray">
+                            {translator.getMessage('options_rule_limits_dynamic_regex')}
                         </div>
-                        <div className="rules-limits__group-limits">
+                        <div className="rules-limits__group-limits rules-limits__text--orange">
                             {reactTranslator.getMessage('options_rule_limits_numbers', {
-                                cur: rulesLimits.userRulesRegexpsEnabledCount,
-                                max: rulesLimits.userRulesRegexpsMaximumCount,
-                            })}
-                        </div>
-                    </div>
-                </div>
-                <div className="rules-limits__section">
-                    <div
-                        className="rules-limits__section-title"
-                    >
-                        {reactTranslator.getMessage('options_rule_limits_static_rulesets')}
-                    </div>
-                    <div className="rules-limits__group">
-                        <div className="rules-limits__group-title">
-                            {reactTranslator.getMessage('options_rule_limits_static_rulesets_builtin')}
-                        </div>
-                        <div className="rules-limits__group-limits">
-                            {reactTranslator.getMessage('options_rule_limits_numbers', {
-                                cur: rulesLimits.staticFiltersEnabledCount,
-                                max: rulesLimits.staticFiltersMaximumCount,
+                                current: rulesLimits.userRulesRegexpsEnabledCount,
+                                maximum: rulesLimits.userRulesRegexpsMaximumCount,
                             })}
                         </div>
                     </div>
@@ -120,27 +115,45 @@ export const RulesLimits = observer(() => {
                     <div
                         className="rules-limits__section-title"
                     >
-                        {reactTranslator.getMessage('options_rule_limits_static_rules')}
+                        {translator.getMessage('options_rule_limits_static_rulesets')}
                     </div>
                     <div className="rules-limits__group">
-                        <div className="rules-limits__group-title">
-                            {reactTranslator.getMessage('options_rule_limits_static_rules_all')}
+                        <div className="rules-limits__text--gray">
+                            {translator.getMessage('options_rule_limits_static_rulesets_builtin')}
                         </div>
-                        <div className="rules-limits__group-limits">
+                        <div className="rules-limits__group-limits rules-limits__text--green">
                             {reactTranslator.getMessage('options_rule_limits_numbers', {
-                                cur: rulesLimits.staticRulesEnabledCount,
-                                max: rulesLimits.staticRulesMaximumCount,
+                                current: rulesLimits.staticFiltersEnabledCount,
+                                maximum: rulesLimits.staticFiltersMaximumCount,
+                            })}
+                        </div>
+                    </div>
+                </div>
+                <div className="rules-limits__section">
+                    <div
+                        className="rules-limits__section-title"
+                    >
+                        {translator.getMessage('options_rule_limits_static_rules')}
+                    </div>
+                    <div className="rules-limits__group">
+                        <div className="rules-limits__text--gray">
+                            {translator.getMessage('options_rule_limits_static_rules_all')}
+                        </div>
+                        <div className="rules-limits__group-limits rules-limits__text--orange">
+                            {reactTranslator.getMessage('options_rule_limits_numbers', {
+                                current: rulesLimits.staticRulesEnabledCount,
+                                maximum: rulesLimits.staticRulesMaximumCount,
                             })}
                         </div>
                     </div>
                     <div className="rules-limits__group">
-                        <div className="rules-limits__group-title">
-                            {reactTranslator.getMessage('options_rule_limits_static_rules_regex')}
+                        <div className="rules-limits__text--gray">
+                            {translator.getMessage('options_rule_limits_static_rules_regex')}
                         </div>
-                        <div className="rules-limits__group-limits">
+                        <div className="rules-limits__group-limits rules-limits__text--orange">
                             {reactTranslator.getMessage('options_rule_limits_numbers', {
-                                cur: rulesLimits.staticRulesRegexpsEnabledCount,
-                                max: rulesLimits.staticRulesRegexpsMaxCount,
+                                current: rulesLimits.staticRulesRegexpsEnabledCount,
+                                maximum: rulesLimits.staticRulesRegexpsMaxCount,
                             })}
                         </div>
                     </div>
