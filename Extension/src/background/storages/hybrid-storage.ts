@@ -58,7 +58,10 @@ export class HybridStorage implements ExtendedStorageInterface<string, unknown, 
      */
     private static async isIDBSupported(): Promise<boolean> {
         try {
-            await idb.openDB(`${TEST_IDB_NAME_PREFIX}${nanoid()}`, 1);
+            const testDbName = `${TEST_IDB_NAME_PREFIX}${nanoid()}`;
+            const testDb = await idb.openDB(testDbName, 1);
+            testDb.close();
+            await idb.deleteDB(testDbName);
             return true;
         } catch (e) {
             return false;
