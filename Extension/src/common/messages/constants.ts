@@ -107,6 +107,8 @@ export enum MessageType {
   SetConsentedFilters = 'setConsentedFilters',
   GetIsConsentedFilter = 'getIsConsentedFilter',
   GetRulesLimits = 'getRulesLimits',
+  ClearRulesLimitsWarning = 'clearRulesLimitsWarning',
+  RestoreFilters = 'restoreFilters',
 }
 
 export type ApplySettingsJsonMessage = {

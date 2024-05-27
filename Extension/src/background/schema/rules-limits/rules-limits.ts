@@ -15,8 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
+import zod from 'zod';
 
-// Annoyances consent schema entry point
+export const rulesLimitsStorageDataValidator = zod.array(zod.number());
 
-// annoyances consent validators and types
-export * from './annoyances-consent';
+/**
+ * Contains an array of filters which were enabled.
+ */
+export type RulesLimitsStorageData = zod.infer<typeof rulesLimitsStorageDataValidator>;

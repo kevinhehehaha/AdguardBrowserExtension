@@ -90,7 +90,6 @@ export class App {
         // We will remove it once engine initialization becomes faster.
         KeepAlive.init();
 
-        // FIXME: Uncomment or remove
         // Reads persisted data from session storage.
         await engine.api.initStorage();
 

@@ -37,7 +37,6 @@ import {
     DocumentBlockApi,
     CustomFilterApi,
 } from '../api';
-// FIXME should provide empty implementation for mv2 version
 import { RulesLimitsService, rulesLimitsService } from '../services/rules-limits/mv3/rules-limits';
 
 import { TsWebExtensionEngine } from './interface';

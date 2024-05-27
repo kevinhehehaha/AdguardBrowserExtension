@@ -713,6 +713,12 @@
     "options_rule_limits": {
         "message": "Rule limits"
     },
+    "options_rule_limits_description": {
+        "message": "This extension complies with Manifest V3"
+    },
+    "options_rule_limits_description_link": {
+        "message": "Learn more about Manifest V3"
+    },
     "options_rule_limits_dynamic": {
         "message": "Dynamic rules"
     },
@@ -759,13 +765,13 @@
         "message": "Your possible actions"
     },
     "options_rule_limits_warning_actions_delete_filters": {
-        "message": "Option 1. Delete unnecessary ad-blocking extensions from your browser. To reactivate the filters mentioned in the \"Filters enabled before the update\" section, click reactivate filters."
+        "message": "Option 1. Delete unnecessary ad-blocking extensions from your browser. To reactivate the filters mentioned in the \"Filters enabled before the update\" section, click <a>reactivate filters.</a>"
     },
     "options_rule_limits_warning_actions_install_app": {
         "message": "Option 2. Install the AdGuard Ad Blocker app: it has no restrictions on filtering rules. Get AdGuard for Mac"
     },
     "options_rule_limits_warning_actions_close_warning": {
-        "message": "Option 3. If you're satisfied with the currently enabled default filter(s), close this warning."
+        "message": "Option 3. If you're satisfied with the currently enabled default filter(s), <a>close this warning.</a>"
     },
     "options_show_adguard_full_version_title": {
         "message": "Show information on the AdGuard full version"

@@ -16,18 +16,7 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { RULES_LIMITS_KEY } from '../../common/constants';
-import { StringStorage } from '../utils/string-storage';
-import { ConfigurationResultStorageData } from '../schema/configuration-result/configuration-result';
+// Rules limits schema entry point
 
-import { storage } from './main';
-
-/**
- * Instance of {@link StringStorage} that stores filter enabled before chrome decided to disable them
- * in {@link storage} under {@link RULES_LIMITS_KEY} key.
- */
-export const configurationResultStorage = new StringStorage<
-    typeof RULES_LIMITS_KEY,
-    ConfigurationResultStorageData,
-    'async'
->(RULES_LIMITS_KEY, storage);
+// Rules limits validators and types
+export * from './rules-limits';

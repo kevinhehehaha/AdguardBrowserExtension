@@ -23,6 +23,8 @@ import { SettingsSection } from '../Settings/SettingsSection';
 import { reactTranslator } from '../../../../common/translators/reactTranslator';
 import { rootStore } from '../../stores/RootStore';
 import { type IRulesLimits } from '../../../../background/services/rules-limits/mv3/rules-limits';
+import { messenger } from '../../../services/messenger';
+import { MessageType } from '../../../../common/messages';
 
 import { Warning } from './Warning';
 
@@ -37,16 +39,14 @@ export const RulesLimits = observer(() => {
 
     const showWarning = rulesLimits.previouslyEnabledFilters.length > 0;
 
-    // FIXME
-    const onClickReactivateFilters = () => {
-        // eslint-disable-next-line no-console
-        console.log('Reactivate filters');
+    const onClickReactivateFilters = async () => {
+        await messenger.sendMessage(MessageType.RestoreFilters);
     };
 
-    // FIXME
-    const onClickCloseWarning = () => {
-        // eslint-disable-next-line no-console
-        console.log('Close warning');
+    const onClickCloseWarning = async () => {
+        // FIXME add loader
+        await messenger.sendMessage(MessageType.ClearRulesLimitsWarning);
+        // FIXME update state
     };
 
     return (
@@ -54,9 +54,9 @@ export const RulesLimits = observer(() => {
             title={reactTranslator.getMessage('options_rule_limits')}
             description={(
                 <>
-                    {/* FIXME add this texts to messages */}
-                    <div>This extension complies with Manifest V3</div>
-                    <div>Learn more about Manifest V3</div>
+                    <div>{reactTranslator.getMessage('options_rule_limits_description')}</div>
+                    {/* FIXME add link */}
+                    <div>{reactTranslator.getMessage('options_rule_limits_description_link')}</div>
                 </>
             )}
         >

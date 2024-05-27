@@ -1,3 +1,5 @@
+// TODO figure out how to fix the eslint errors
+/* eslint-disable jsx-a11y/anchor-is-valid,jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions */
 /**
  * @file
  * This file is part of AdGuard Browser Extension (https://github.com/AdguardTeam/AdguardBrowserExtension).
@@ -69,13 +71,35 @@ export const Warning = ({
                     </div>
                     <div className="description">
                         <div className="option">
-                            {reactTranslator.getMessage('options_rule_limits_warning_actions_delete_filters')}
+                            {reactTranslator.getMessage('options_rule_limits_warning_actions_delete_filters', {
+                                a: (chunks: string) => (
+                                    <a
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        onClick={onClickReactivateFilters}
+                                    >
+                                        {chunks}
+                                    </a>
+                                ),
+                            })}
                         </div>
                         <div className="option">
                             {reactTranslator.getMessage('options_rule_limits_warning_actions_install_app')}
                         </div>
                         <div className="option">
-                            {reactTranslator.getMessage('options_rule_limits_warning_actions_close_warning')}
+                            {reactTranslator.getMessage('options_rule_limits_warning_actions_close_warning', {
+                                a: (chunks: string) => {
+                                    return (
+                                        <a
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            onClick={onClickCloseWarning}
+                                        >
+                                            {chunks}
+                                        </a>
+                                    );
+                                },
+                            })}
                         </div>
                     </div>
                 </div>

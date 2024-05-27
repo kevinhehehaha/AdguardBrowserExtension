@@ -15,11 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
-import zod from 'zod';
 
-export const configurationResultStorageDataValidator = zod.array(zod.number());
+import { RULES_LIMITS_KEY } from '../../common/constants';
+import { StringStorage } from '../utils/string-storage';
+import { RulesLimitsStorageData } from '../schema/rules-limits/rules-limits';
+
+import { storage } from './main';
 
 /**
- * Contains an array of filters which were enabled.
+ * Instance of {@link StringStorage} that stores filter enabled before chrome decided to disable them
+ * in {@link storage} under {@link RULES_LIMITS_KEY} key.
  */
-export type ConfigurationResultStorageData = zod.infer<typeof configurationResultStorageDataValidator>;
+export const rulesLimitsStorage = new StringStorage<
+    typeof RULES_LIMITS_KEY,
+    RulesLimitsStorageData,
+    'async'
+>(RULES_LIMITS_KEY, storage);

@@ -32,8 +32,8 @@ import { MessageType } from '../../../../common/messages';
 import { FilterMetadata, FiltersApi } from '../../../api';
 import { CUSTOM_FILTERS_START_ID } from '../../../../common/constants';
 import { filterStateStorage } from '../../../storages';
-import { configurationResultStorage } from '../../../storages/configuration-result';
-import { configurationResultStorageDataValidator } from '../../../schema/configuration-result/configuration-result';
+import { rulesLimitsStorage } from '../../../storages/rules-limits';
+import { rulesLimitsStorageDataValidator } from '../../../schema/rules-limits/rules-limits';
 import { logger } from '../../../../common/logger';
 
 const {
@@ -77,8 +77,12 @@ export class RulesLimitsService {
      * Initialize the service.
      */
     init(): void {
-        // Subscribe to messages from the options page
+        // Subscribe to messages from the options' page
         messageHandler.addListener(MessageType.GetRulesLimits, this.onGetRulesLimits.bind(this));
+        messageHandler.addListener(
+            MessageType.ClearRulesLimitsWarning,
+            RulesLimitsService.cleanPreviouslyNeededToBeEnabledFilters,
+        );
     }
 
     /**
@@ -262,7 +266,7 @@ export class RulesLimitsService {
             staticRulesRegexpsEnabledCount: RulesLimitsService.getStaticRulesRegexpsCount(result, filters),
             staticRulesRegexpsMaxCount: MAX_NUMBER_OF_REGEX_RULES,
             nowEnabledFilters,
-            previouslyEnabledFilters: configurationResultStorage.getData(),
+            previouslyEnabledFilters: rulesLimitsStorage.getData(),
         };
     }
 
@@ -281,37 +285,43 @@ export class RulesLimitsService {
      * @param update Function to update filters state.
      */
     static async checkFiltersLimitsChange(update: (skipCheck: boolean) => Promise<void>): Promise<void> {
-        const wasEnabledIds = FiltersApi.getEnabledFiltersWithMetadata()
+        const neededToBeEnabledFilters = FiltersApi.getEnabledFiltersWithMetadata()
             .filter(f => f.groupId <= CUSTOM_FILTERS_START_ID)
             .map((filter) => filter.filterId)
             .sort((a: number, b: number) => a - b);
 
-        const nowEnabledIds = (await chrome.declarativeNetRequest.getEnabledRulesets())
+        const actuallyEnabledFilters = (await chrome.declarativeNetRequest.getEnabledRulesets())
             .map((s) => Number.parseInt(s.slice(RULE_SET_NAME_PREFIX.length), 10))
             .sort((a: number, b: number) => a - b);
 
-        const brokenState = !isEqual(wasEnabledIds, nowEnabledIds);
+        const brokenState = !isEqual(neededToBeEnabledFilters, actuallyEnabledFilters);
 
-        const filtersToDisable = wasEnabledIds.filter((id) => !nowEnabledIds.includes(id));
+        const filtersToDisable = neededToBeEnabledFilters.filter((id) => !actuallyEnabledFilters.includes(id));
 
         // TODO: add this broken state icon
         // await browserActions.setIconBroken(brokenState);
 
         if (brokenState) {
             // Save last used filters ids to show user
-            await configurationResultStorage.setData(wasEnabledIds);
-            filterStateStorage.enableFilters(nowEnabledIds);
+            await rulesLimitsStorage.setData(neededToBeEnabledFilters);
+            filterStateStorage.enableFilters(actuallyEnabledFilters);
             filterStateStorage.disableFilters(filtersToDisable);
 
             await update(true);
+        } else {
+            const previousNeededToBeEnabledFiltersFromStorage = await RulesLimitsService.getFromStorage();
+            // If state is not broken - clear list of "broken" filters
+            if (previousNeededToBeEnabledFiltersFromStorage.length > 0) {
+                await rulesLimitsStorage.setData([]);
+            }
         }
+    }
 
-        const previouslySetFilters = await RulesLimitsService.getFromStorage();
-
-        // If state is not broken - clear list of "broken" filters
-        if (previouslySetFilters.length > 0) {
-            await configurationResultStorage.setData([]);
-        }
+    /**
+     * Clean previously needed to be enabled filters.
+     */
+    static async cleanPreviouslyNeededToBeEnabledFilters(): Promise<void> {
+        await rulesLimitsStorage.setData([]);
     }
 
     /**
@@ -322,22 +332,26 @@ export class RulesLimitsService {
     private static async getFromStorage(): Promise<number[]> {
         let data: number[] = [];
         try {
-            const storageData = await configurationResultStorage.read();
+            const storageData = await rulesLimitsStorage.read();
             if (typeof storageData === 'string') {
-                data = configurationResultStorageDataValidator.parse(JSON.parse(storageData));
-                configurationResultStorage.setCache(data);
+                data = rulesLimitsStorageDataValidator.parse(JSON.parse(storageData));
+                rulesLimitsStorage.setCache(data);
             } else {
                 data = [];
-                await configurationResultStorage.setData(data);
+                await rulesLimitsStorage.setData(data);
             }
         } catch (e) {
             // eslint-disable-next-line max-len
-            logger.warn(`Cannot parse data from "${configurationResultStorage.key}" storage, set default states. Origin error: `, e);
+            logger.warn(`Cannot parse data from "${rulesLimitsStorage.key}" storage, set default states. Origin error: `, e);
             data = [];
-            await configurationResultStorage.setData(data);
+            await rulesLimitsStorage.setData(data);
         }
         return data;
     }
+
+    public static getPreviouslyEnabledFilters = async (): Promise<number[]> => {
+        return rulesLimitsStorage.getData();
+    };
 }
 
 export const rulesLimitsService = new RulesLimitsService();
