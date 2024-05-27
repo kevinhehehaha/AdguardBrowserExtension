@@ -285,7 +285,7 @@ export class RulesLimitsService {
      * @param update Function to update filters state.
      */
     static async checkFiltersLimitsChange(update: (skipCheck: boolean) => Promise<void>): Promise<void> {
-        const neededToBeEnabledFilters = FiltersApi.getEnabledFiltersWithMetadata()
+        const expectedEnabledFilters = FiltersApi.getEnabledFiltersWithMetadata()
             .filter(f => f.groupId <= CUSTOM_FILTERS_START_ID)
             .map((filter) => filter.filterId)
             .sort((a: number, b: number) => a - b);
@@ -294,24 +294,24 @@ export class RulesLimitsService {
             .map((s) => Number.parseInt(s.slice(RULE_SET_NAME_PREFIX.length), 10))
             .sort((a: number, b: number) => a - b);
 
-        const brokenState = !isEqual(neededToBeEnabledFilters, actuallyEnabledFilters);
+        const isStateBroken = !isEqual(expectedEnabledFilters, actuallyEnabledFilters);
 
-        const filtersToDisable = neededToBeEnabledFilters.filter((id) => !actuallyEnabledFilters.includes(id));
+        const filtersToDisable = expectedEnabledFilters.filter((id) => !actuallyEnabledFilters.includes(id));
 
         // TODO: add this broken state icon
-        // await browserActions.setIconBroken(brokenState);
+        // await browserActions.setIconBroken(isStateBroken);
 
-        if (brokenState) {
-            // Save last used filters ids to show user
-            await rulesLimitsStorage.setData(neededToBeEnabledFilters);
+        if (isStateBroken) {
+            // Save last expected to be enabled filters to show user
+            await rulesLimitsStorage.setData(expectedEnabledFilters);
             filterStateStorage.enableFilters(actuallyEnabledFilters);
             filterStateStorage.disableFilters(filtersToDisable);
 
             await update(true);
         } else {
-            const previousNeededToBeEnabledFiltersFromStorage = await RulesLimitsService.getFromStorage();
+            const prevExpectedEnabledFilters = await RulesLimitsService.getFromStorage();
             // If state is not broken - clear list of "broken" filters
-            if (previousNeededToBeEnabledFiltersFromStorage.length > 0) {
+            if (prevExpectedEnabledFilters.length > 0) {
                 await rulesLimitsStorage.setData([]);
             }
         }
