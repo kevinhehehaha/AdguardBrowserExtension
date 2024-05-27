@@ -34,6 +34,7 @@ import {
     GetStatisticsDataResponse,
     SettingsData,
     PartialTabContext,
+    UserRulesApi,
 } from '../../api';
 
 export type GetTabInfoForPopupResponse = {
@@ -95,6 +96,11 @@ export class PopupService {
         }
 
         if (tabContext) {
+            // FIXME: fix for mv3 before releasing
+            let hasCustomRulesToReset = false;
+            if (!__IS_MV3__) {
+                hasCustomRulesToReset = await UserRulesApi.hasRulesForUrl(tabContext.info.url);
+            }
             return {
                 frameInfo: FramesApi.getMainFrameData(tabContext),
                 stats: PageStatsApi.getStatisticsData(),
@@ -107,8 +113,7 @@ export class PopupService {
                     isEdgeBrowser: UserAgent.isEdge || UserAgent.isEdgeChromium,
                     notification: await promoNotificationApi.getCurrentNotification(),
                     isDisableShowAdguardPromoInfo: settingsStorage.get(SettingOption.DisableShowAdguardPromoInfo),
-                    hasCustomRulesToReset: false,
-                    // hasCustomRulesToReset: await UserRulesApi.hasRulesForUrl(tabContext.info.url),
+                    hasCustomRulesToReset,
                 },
             };
         }

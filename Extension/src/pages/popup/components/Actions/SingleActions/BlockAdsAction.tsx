@@ -18,35 +18,39 @@
 
 import React from 'react';
 
-import classnames from 'classnames';
+import { translator } from '../../../../../common/translators/translator';
+import { messenger } from '../../../../services/messenger';
+import { Icon } from '../../../../common/components/ui/Icon';
 
-type TabParams = {
+import { type SingleActionParams } from './types';
+
+import '../actions.pcss';
+
+export const BlockAdsAction = ({ className, applicationAvailable }: SingleActionParams) => {
     /**
-     * Tab title.
+     * Handle block ads action click.
      */
-    title: string,
-
-    /**
-     * Whether the tab is active.
-     */
-    active: boolean,
-
-    /**
-     * Click handler.
-     */
-    onClick: () => void,
-};
-
-export const Tab = ({ title, active, onClick }: TabParams) => {
-    const tabClass = classnames('tabs__tab', { 'tabs__tab--active': active });
+    const handleBlockAds = () => {
+        if (!applicationAvailable) {
+            return;
+        }
+        messenger.openAssistant();
+        window.close();
+    };
 
     return (
         <button
             type="button"
-            className={tabClass}
-            onClick={onClick}
+            className={className}
+            onClick={handleBlockAds}
         >
-            {title}
+            <Icon
+                id="#block-ad"
+                classname="icon--action"
+            />
+            <div className="action__title">
+                {translator.getMessage('popup_block_site_ads_option')}
+            </div>
         </button>
     );
 };
