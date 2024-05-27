@@ -116,17 +116,20 @@ export class Engine {
         const filters: ConfigurationMV2['filters'] = [];
 
         const tasks = enabledFilters.map(async (filterId) => {
-            const rules = await FiltersStorage.get(filterId);
+            try {
+                const content = await FiltersStorage.get(filterId);
+                const sourceMap = await FiltersStorage.getSourceMap(filterId);
+                const trusted = FiltersApi.isFilterTrusted(filterId);
 
-            const trusted = FiltersApi.isFilterTrusted(filterId);
-
-            const rulesTexts = rules.join('\n');
-
-            filters.push({
-                filterId,
-                content: rulesTexts,
-                trusted,
-            });
+                filters.push({
+                    filterId,
+                    content,
+                    trusted,
+                    sourceMap,
+                });
+            } catch (e) {
+                logger.error(`Failed to get filter ${filterId}`, e);
+            }
         });
 
         await Promise.all(tasks);
@@ -143,30 +146,30 @@ export class Engine {
             }
         }
 
-        let userrules: string[] = [];
-
-        if (UserRulesApi.isEnabled()) {
-            userrules = await UserRulesApi.getUserRules();
-
-            // Remove empty strings.
-            userrules = userrules.filter(rule => !!rule);
-
-            // Remove duplicates.
-            userrules = Array.from(new Set(userrules));
-        }
-
         const trustedDomains = await DocumentBlockApi.getTrustedDomains();
 
-        return {
+        const result: ConfigurationMV2 = {
             verbose: false,
             logLevel: LogLevel.Info,
             filters,
             userrules: {
-                content: userrules.join('\n'),
+                // FIXME: Handle empty user rules
+                content: await FiltersStorage.get(0),
+                sourceMap: {},
             },
             allowlist,
             settings,
             trustedDomains,
         };
+
+        if (UserRulesApi.isEnabled()) {
+            const { filterList, sourceMap } = await UserRulesApi.getUserRules();
+            result.userrules = {
+                content: filterList,
+                sourceMap,
+            };
+        }
+
+        return result;
     }
 }

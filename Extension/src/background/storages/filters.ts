@@ -17,18 +17,11 @@
  */
 import zod from 'zod';
 
-import { FilterConverter } from '../utils/filter-converter';
-import { logger } from '../../common/logger';
+import { FilterListPreprocessor, PreprocessedFilterList } from '@adguard/tswebextension';
+
 import { AntiBannerFiltersId, FILTER_LIST_EXTENSION } from '../../common/constants';
-import { getErrorMessage } from '../../common/error';
 
 import { hybridStorage } from './shared-instances';
-
-export interface FilterData {
-    convertedFilterList: string;
-    conversionMap?: Record<string, string>;
-    sourceMap?: Record<number, number>;
-}
 
 /**
  * Prefix for storage keys where filter lists are stored.
@@ -38,6 +31,8 @@ export interface FilterData {
  * filterrules_1.txt
  */
 export const FILTER_KEY_PREFIX = 'filterrules_';
+
+export const BINARY_FILTER_KEY_PREFIX = 'binaryfilterrules_';
 
 /**
  * A special prefix for storage keys where original user rules are stored.
@@ -61,7 +56,11 @@ const CONVERSION_MAP_PREFIX = 'conversionmap_';
 /**
  * Schema for the conversion map.
  */
-const CONVERSION_MAP_SCHEMA = zod.record(zod.string(), zod.string());
+const CONVERSION_MAP_SCHEMA = zod.record(zod.string(), zod.string()).default({});
+
+const SOURCE_MAP_SCHEMA = zod.record(zod.string(), zod.number()).default({});
+
+const SOURCE_MAP_PREFIX = 'sourcemap_';
 
 /**
  * Regular expression that helps to extract filter id from the key.
@@ -75,27 +74,6 @@ const RE_FILTER_KEY = new RegExp(
  */
 export class FiltersStorage {
     /**
-     * Cache for conversion maps.
-     * Key is filter id, value is its conversion map.
-     */
-    private static readonly conversionMaps = new Map<number, Record<string, string>>();
-
-    /**
-     * Updates conversion map cache for the specified filter list if possible.
-     *
-     * @param filterId Filter id.
-     * @param possibleMap Possible conversion map.
-     */
-    private static updateConversionMapIfPossible(filterId: number, possibleMap: unknown): void {
-        try {
-            const conversionMap = CONVERSION_MAP_SCHEMA.parse(possibleMap);
-            FiltersStorage.conversionMaps.set(filterId, conversionMap);
-        } catch (error: unknown) {
-            logger.error(`Failed to get conversion map for filter ${filterId} due to`, getErrorMessage(error));
-        }
-    }
-
-    /**
      * Sets specified filter list to {@link storage}.
      *
      * @param filterId Filter id.
@@ -104,7 +82,6 @@ export class FiltersStorage {
     static async set(filterId: number, filter: string[]): Promise<void> {
         const data = FiltersStorage.prepareFilterForStorage(filterId, filter);
         await hybridStorage.setMultiple(data);
-        FiltersStorage.updateConversionMapIfPossible(filterId, data.conversionMap);
     }
 
     /**
@@ -118,21 +95,24 @@ export class FiltersStorage {
         const result: Record<string, unknown> = {};
 
         const filterKey = FiltersStorage.getFilterKey(filterId);
+        const binaryFilterKey = FiltersStorage.getBinaryFilterKey(filterId);
         const conversionMapKey = FiltersStorage.getConversionMapKey(filterId);
+        const sourceMapKey = FiltersStorage.getSourceMapKey(filterId);
 
-        // Convert filter rules to AdGuard format where it's possible.
-        // We need conversion map to show original rule text in the filtering log if a converted rule is applied.
-        const { filter: convertedFilter, conversionMap } = FilterConverter.convertFilter(filter);
+        const {
+            rawFilterList, filterList, conversionMap, sourceMap,
+        } = FilterListPreprocessor.preprocess(filter.join('\n')); // FIXME: why need to join?
 
-        result[filterKey] = convertedFilter;
+        result[filterKey] = rawFilterList;
+        result[binaryFilterKey] = filterList;
         result[conversionMapKey] = conversionMap;
+        result[sourceMapKey] = sourceMap;
 
         // Special case: user rules — we need to store original rules as well.
         // This is needed for the editor UI and for exporting user rules.
         // Conversion map is not enough because it can't convert back multiple
         // rules to the same single rule easily.
-        // Think about the following example:
-        //  example.com#$#abp-snippet1; abp-snippet2; abp-snippet3
+        // Think about the following example: `example.com#$#abp-snippet1; abp-snippet2; abp-snippet3`
         if (filterId === AntiBannerFiltersId.UserFilterId) {
             const originalFilterKey = FiltersStorage.getFilterKey(filterId, true);
             result[originalFilterKey] = filter;
@@ -149,14 +129,22 @@ export class FiltersStorage {
      * @returns Promise, resolved with filter rules strings.
      * @throws Error, if filter list data is not valid.
      */
-    static async get(filterId: number): Promise<string[]> {
-        const filterKey = FiltersStorage.getFilterKey(filterId);
-        const data = await hybridStorage.get(filterKey);
-        // Update conversion map cache
-        const conversionMapKey = FiltersStorage.getConversionMapKey(filterId);
-        const conversionMapData = await hybridStorage.get(conversionMapKey);
-        FiltersStorage.updateConversionMapIfPossible(filterId, conversionMapData);
-        return zod.string().array().parse(data);
+    static async get(filterId: number): Promise<Uint8Array[]> {
+        const binaryFilterKey = FiltersStorage.getBinaryFilterKey(filterId);
+        const data = await hybridStorage.get(binaryFilterKey);
+        return zod.array(zod.instanceof(Uint8Array)).parse(data);
+    }
+
+    /**
+     * Returns source map for the specified filter list.
+     *
+     * @param filterId Filter id.
+     * @returns Promise, resolved with source map.
+     */
+    static async getSourceMap(filterId: number): Promise<Record<number, number>> {
+        const sourceMapKey = FiltersStorage.getSourceMapKey(filterId);
+        const data = await hybridStorage.get(sourceMapKey);
+        return SOURCE_MAP_SCHEMA.parse(data);
     }
 
     /**
@@ -165,8 +153,6 @@ export class FiltersStorage {
      * @param filterId Filter id.
      */
     static async remove(filterId: number): Promise<void> {
-        FiltersStorage.conversionMaps.delete(filterId);
-
         await hybridStorage.remove(FiltersStorage.getConversionMapKey(filterId));
         await hybridStorage.remove(FiltersStorage.getFilterKey(filterId, true));
     }
@@ -206,15 +192,23 @@ export class FiltersStorage {
     }
 
     /**
-     * Returns original rule for specified filter id and rule.
+     * Returns {@link hybridStorage} key to source map from specified filter list.
      *
      * @param filterId Filter id.
-     * @param rule Rule to get original rule for.
-     * @returns Original rule or `undefined` if not found.
+     * @returns Storage key to source map from specified filter list.
      */
-    public static getOriginalRuleText(filterId: number, rule: string): string | undefined {
-        const conversionMap = FiltersStorage.conversionMaps.get(filterId);
-        return conversionMap?.[rule];
+    private static getSourceMapKey(filterId: number): string {
+        return `${SOURCE_MAP_PREFIX}${filterId}${FILTER_LIST_EXTENSION}`;
+    }
+
+    /**
+     * Returns {@link hybridStorage} key to binary filter list from specified filter list.
+     *
+     * @param filterId Filter id.
+     * @returns Storage key to binary filter list from specified filter list.
+     */
+    private static getBinaryFilterKey(filterId: number): string {
+        return `${BINARY_FILTER_KEY_PREFIX}${filterId}${FILTER_LIST_EXTENSION}`;
     }
 
     /**
@@ -238,35 +232,30 @@ export class FiltersStorage {
      * @param filterId Filter id.
      * @returns Promise, resolved with filter data or `null` if filter is not found.
      */
-    static async getAllFilterData(filterId: number): Promise<FilterData | null> {
+    static async getAllFilterData(filterId: number): Promise<PreprocessedFilterList | null> {
         const filterKey = FiltersStorage.getFilterKey(filterId);
+        const binaryFilterKey = FiltersStorage.getBinaryFilterKey(filterId);
         const conversionMapKey = FiltersStorage.getConversionMapKey(filterId);
+        const sourceMapKey = FiltersStorage.getSourceMapKey(filterId);
 
-        const [filter, conversionMap, sourceMap] = await Promise.all([
+        const data = await Promise.all([
             hybridStorage.get(filterKey),
+            hybridStorage.get(binaryFilterKey),
             hybridStorage.get(conversionMapKey),
-            hybridStorage.get(`sourceMap_${filterId}.txt`),
+            hybridStorage.get(sourceMapKey),
         ]);
 
-        if (!filter) {
+        if (data.every((item) => !item)) {
             return null;
         }
 
-        // FIXME: move schema to the top of the file
-        const parsedFilter = zod.string().array().parse(filter).join('\n');
+        const [rawFilterList, filterList, conversionMap, sourceMap] = data;
 
-        const result: FilterData = {
-            convertedFilterList: parsedFilter,
+        return {
+            rawFilterList: zod.string().parse(rawFilterList), // FIXME: why need to join?
+            filterList: zod.array(zod.instanceof(Uint8Array)).default([]).parse(filterList),
+            conversionMap: CONVERSION_MAP_SCHEMA.parse(conversionMap),
+            sourceMap: SOURCE_MAP_SCHEMA.parse(sourceMap),
         };
-
-        if (conversionMap) {
-            result.conversionMap = CONVERSION_MAP_SCHEMA.parse(conversionMap);
-        }
-
-        if (sourceMap) {
-            result.sourceMap = zod.record(zod.number(), zod.number()).parse(sourceMap);
-        }
-
-        return result;
     }
 }

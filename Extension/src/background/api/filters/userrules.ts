@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
-import { RuleSyntaxUtils } from '@adguard/tsurlfilter';
+import { PreprocessedFilterList, RuleSyntaxUtils } from '@adguard/tsurlfilter';
 
 import { logger } from '../../../common/logger';
 import { AntiBannerFiltersId } from '../../../common/constants';
@@ -77,7 +77,8 @@ export class UserRulesApi {
             return false;
         }
 
-        const userRules = await UserRulesApi.getUserRules();
+        // FIXME
+        const userRules = (await UserRulesApi.getUserRules()).rawFilterList.split('\n');
         return userRules.some(userRuleString => RuleSyntaxUtils.isRuleForUrl(
             userRuleString,
             url,
@@ -87,8 +88,19 @@ export class UserRulesApi {
     /**
      * Returns rules from user list.
      */
-    public static async getUserRules(): Promise<string[]> {
-        return FiltersStorage.get(AntiBannerFiltersId.UserFilterId);
+    public static async getUserRules(): Promise<PreprocessedFilterList> {
+        const data = await FiltersStorage.getAllFilterData(AntiBannerFiltersId.UserFilterId);
+
+        if (!data) {
+            return {
+                rawFilterList: '',
+                filterList: [],
+                sourceMap: {},
+                conversionMap: {},
+            };
+        }
+
+        return data;
     }
 
     /**
@@ -109,7 +121,7 @@ export class UserRulesApi {
      * @param rule Rule text.
      */
     public static async addUserRule(rule: string): Promise<void> {
-        const userRules = await UserRulesApi.getUserRules();
+        const userRules = (await UserRulesApi.getUserRules()).rawFilterList.split('\n'); // FIXME
 
         userRules.push(rule);
 
@@ -122,7 +134,7 @@ export class UserRulesApi {
      * @param rule Rule text.
      */
     public static async removeUserRule(rule: string): Promise<void> {
-        const userRules = await UserRulesApi.getUserRules();
+        const userRules = (await UserRulesApi.getUserRules()).rawFilterList.split('\n'); // FIXME
 
         await UserRulesApi.setUserRules(userRules.filter(r => r !== rule));
     }
@@ -133,7 +145,7 @@ export class UserRulesApi {
      * @param url Page url.
      */
     public static async removeRulesByUrl(url: string): Promise<void> {
-        const userRules = await UserRulesApi.getUserRules();
+        const userRules = (await UserRulesApi.getUserRules()).rawFilterList.split('\n'); // FIXME
 
         await UserRulesApi.setUserRules(userRules.filter(rule => !RuleSyntaxUtils.isRuleForUrl(rule, url)));
     }

@@ -29,6 +29,7 @@ import {
     StealthActionEvent,
     getRuleSourceText,
     getRuleSourceIndex,
+    PreprocessedFilterList,
 } from '@adguard/tswebextension';
 
 import { AntiBannerFiltersId } from '../../common/constants';
@@ -36,15 +37,9 @@ import { logger } from '../../common/logger';
 import { translator } from '../../common/translators/translator';
 import { listeners } from '../notifier';
 import { Engine } from '../engine';
-import {
-    FilterData,
-    FiltersStorage,
-    settingsStorage,
-} from '../storages';
+import { FiltersStorage, settingsStorage } from '../storages';
 import { SettingOption } from '../schema';
 import { TabsApi } from '../../common/api/extension/tabs';
-import { messageHandler } from '../message-handler';
-import { MessageType } from '../../common/messages';
 
 export type FilteringEventRuleData = {
     filterId: number,
@@ -137,48 +132,32 @@ export class FilteringLogApi {
      * This cache is used to avoid unnecessary requests to the storage while filtering log is opened.
      * After closing the filtering log, the cache is purged to free up memory.
      */
-    private filtersCache = new Map<number, FilterData>();
-
-    /**
-     * Creates an instance of the filtering log API.
-     * Initializes the event listeners.
-     */
-    constructor() {
-        // FIXME: double check events
-        const events = [
-            MessageType.AddAndEnableFilter,
-            MessageType.ApplySettingsJson,
-            MessageType.ResetSettings,
-            MessageType.SaveUserRules,
-            MessageType.SaveAllowlistDomains,
-            MessageType.DisableFiltersGroup,
-            MessageType.DisableFilter,
-            MessageType.SubscribeToCustomFilter,
-            MessageType.RemoveAntiBannerFilter,
-            MessageType.ChangeApplicationFilteringDisabled,
-            MessageType.ResetCustomRulesForPage,
-            MessageType.RemoveAllowlistDomain,
-            MessageType.AddAllowlistDomainPopup,
-            MessageType.AddUserRule,
-            MessageType.RemoveUserRule,
-            MessageType.EnableFiltersGroup,
-            MessageType.ChangeUserSettings,
-            MessageType.CheckRequestFilterReady,
-            MessageType.SetConsentedFilters,
-        ];
-
-        this.purgeFiltersCache = this.purgeFiltersCache.bind(this);
-
-        events.forEach((event) => {
-            messageHandler.addListener(event, this.purgeFiltersCache);
-        });
-    }
+    private filtersCache = new Map<number, PreprocessedFilterList>();
 
     /**
      * Purges filters cache.
+     *
+     * @param filterIds Filter ids to remove from cache. If not provided, the whole cache will be purged.
      */
-    private purgeFiltersCache(): void {
+    private purgeFiltersCache(filterIds?: number[]): void {
+        if (filterIds) {
+            filterIds.forEach(filterId => this.filtersCache.delete(filterId));
+            return;
+        }
+
         this.filtersCache.clear();
+    }
+
+    /**
+     * Called when filters are changed.
+     *
+     * @param filterIds Filter ids that were changed (optional).
+     */
+    public onFiltersChanged(filterIds?: number[]): void {
+        // The cache is only relevant if the filtering log is open
+        if (this.isOpen()) {
+            this.purgeFiltersCache(filterIds);
+        }
     }
 
     /**
@@ -192,7 +171,6 @@ export class FilteringLogApi {
      */
     public async getRuleText(filterId: number, ruleIndex: number): Promise<RuleText | null> {
         let filterData;
-
         filterData = this.filtersCache.get(filterId);
 
         if (!filterData) {
@@ -206,29 +184,28 @@ export class FilteringLogApi {
             }
         }
 
-        const { convertedFilterList, conversionMap, sourceMap } = filterData;
+        const { rawFilterList, conversionMap, sourceMap } = filterData;
 
         // It is impossible to get rule text if there is no source map
         if (!sourceMap) {
             return null;
         }
 
-        // Get line start index for the rule from the rule index
+        // Get line start index in the source file by rule start index in the byte array
         const lineStartIndex = getRuleSourceIndex(ruleIndex, sourceMap);
 
         if (lineStartIndex === -1) {
             return null;
         }
 
-        const sourceRule = getRuleSourceText(lineStartIndex, convertedFilterList);
+        // Get raw rule text from the source file by line start index
+        const sourceRule = getRuleSourceText(lineStartIndex, rawFilterList);
 
         if (!sourceRule) {
             return null;
         }
 
-        // FIXME: May change `conversionMap` key to `lineStartIndex` which is just a number?
-        // (Currently we maps the converted rule text to the original rule text)
-        if (conversionMap && conversionMap[sourceRule]) {
+        if (conversionMap && conversionMap[lineStartIndex]) {
             return {
                 ruleText: sourceRule,
                 appliedRuleText: conversionMap[ruleIndex],
@@ -551,38 +528,21 @@ export class FilteringLogApi {
     }
 
     /**
-     * Helper method to get original rule text from {@link FiltersStorage}.
-     * Applied filter rule may be converted, but we need to store original rule text in the filtering log.
-     *
-     * @param filterId Filter id.
-     * @param ruleText Applied rule text.
-     * @returns Rule text and applied rule text (if rule was converted, otherwise `undefined`).
-     */
-    private static getAppliedAndOriginalRuleTexts(filterId: number, ruleText: string): RuleText {
-        // Get original rule text from storage. If rule wasn't converted, original rule text is `undefined`.
-        const originalRuleText = FiltersStorage.getOriginalRuleText(filterId, ruleText);
-
-        if (!originalRuleText) {
-            return { ruleText };
-        }
-
-        return { ruleText: originalRuleText, appliedRuleText: ruleText };
-    }
-
-    /**
      * Creates {@link FilteringEventRuleData} from {@link NetworkRule}.
      *
      * @param rule Network rule.
      * @returns Object of {@link FilteringEventRuleData}.
      */
-    public static createNetworkRuleEventData(rule: NetworkRule): FilteringEventRuleData {
+    public async createNetworkRuleEventData(rule: NetworkRule): Promise<FilteringEventRuleData> {
         const filterId = rule.getFilterListId();
-        const ruleText = rule.getText();
+        const ruleIndex = rule.getIndex();
 
         const data: FilteringEventRuleData = {
             filterId,
-            // FIXME: rework & do not execute if filtering log is not opened
-            ...FilteringLogApi.getAppliedAndOriginalRuleTexts(filterId, ruleText),
+            ruleText: '',
+            // FIXME (David): Do not execute if filtering log is not opened
+            // FIXME (David): Separate rule apply to popup and full fledged filtering log
+            ...(await this.getRuleText(filterId, ruleIndex)),
         };
 
         if (rule.isOptionEnabled(NetworkRuleOption.Important)) {
@@ -615,17 +575,21 @@ export class FilteringLogApi {
      * @param rule Cosmetic rule.
      * @returns Object of {@link FilteringEventRuleData}.
      */
-    public static createCosmeticRuleEventData(rule: CosmeticRule): FilteringEventRuleData {
+    public async createCosmeticRuleEventData(rule: CosmeticRule): Promise<FilteringEventRuleData> {
         const data: FilteringEventRuleData = Object.create(null);
 
         const filterId = rule.getFilterListId();
         // FIXME: get index here, and fetch original text from storage
-        const ruleText = rule.getText();
+        const ruleIndex = rule.getIndex();
 
         data.filterId = filterId;
-        // FIXME: rework & do not execute if filtering log is not opened
+        // FIXME (David): Do not execute if filtering log is not opened
+        // FIXME (David): Separate rule apply to popup and full fledged filtering log
         // add `ruleText` and `appliedRuleText` properties to data for original and applied rule texts respectively
-        Object.assign(data, FilteringLogApi.getAppliedAndOriginalRuleTexts(filterId, ruleText));
+        const ruleTextData = await this.getRuleText(filterId, ruleIndex);
+        if (ruleTextData) {
+            Object.assign(data, ruleTextData);
+        }
 
         const ruleType = rule.getType();
 
