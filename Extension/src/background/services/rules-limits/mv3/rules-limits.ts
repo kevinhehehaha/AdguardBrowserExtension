@@ -63,8 +63,8 @@ export interface IRulesLimits {
     staticRulesMaximumCount: number;
     staticRulesRegexpsEnabledCount: number;
     staticRulesRegexpsMaxCount: number;
-    nowEnabledFilters: number[];
-    previouslyEnabledFilters: number[];
+    actuallyEnabledFilters: number[];
+    expectedEnabledFilters: number[];
 }
 
 /**
@@ -250,7 +250,7 @@ export class RulesLimitsService {
         const availableStaticRulesCount = await browser.declarativeNetRequest.getAvailableStaticRuleCount();
         const staticRulesMaximumCount = staticRulesEnabledCount + availableStaticRulesCount;
 
-        const nowEnabledFilters = FiltersApi.getEnabledFiltersWithMetadata()
+        const actuallyEnabledFilters = FiltersApi.getEnabledFiltersWithMetadata()
             .filter(f => f.groupId <= CUSTOM_FILTERS_START_ID)
             .map((filter) => filter.filterId);
 
@@ -265,8 +265,8 @@ export class RulesLimitsService {
             staticRulesMaximumCount,
             staticRulesRegexpsEnabledCount: RulesLimitsService.getStaticRulesRegexpsCount(result, filters),
             staticRulesRegexpsMaxCount: MAX_NUMBER_OF_REGEX_RULES,
-            nowEnabledFilters,
-            previouslyEnabledFilters: rulesLimitsStorage.getData(),
+            actuallyEnabledFilters,
+            expectedEnabledFilters: rulesLimitsStorage.getData(),
         };
     }
 

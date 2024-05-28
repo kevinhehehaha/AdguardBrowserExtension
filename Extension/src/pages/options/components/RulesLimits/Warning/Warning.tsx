@@ -24,16 +24,44 @@ import { reactTranslator } from '../../../../../common/translators/reactTranslat
 import { translator } from '../../../../../common/translators/translator';
 import { Icon } from '../../../../common/components/ui/Icon';
 
+/**
+ * Props for the Warning component
+ */
 type WarningProps = {
-    nowEnabled: number[],
-    wasEnabled: number[],
+    /**
+     * String with names of filters that are enabled.
+     */
+    actuallyEnabledFilterNames: string,
+
+    /**
+     * String with names of filters that were expected to be enabled.
+     */
+    expectedEnabledFilterNames: string,
+
+    /**
+     * Function to reactivate filters.
+     */
     onClickReactivateFilters: () => void,
+
+    /**
+     * Function to close the warning.
+     */
     onClickCloseWarning: () => void,
 };
 
+/**
+ * Warning component
+ * It displays a warning message if some filters could not be enabled.
+ *
+ * @param $0 WarningProps
+ * @param $0.actuallyEnabledFilterNames String with names of filters that are enabled.
+ * @param $0.expectedEnabledFilterNames String with names of filters that were expected to be enabled.
+ * @param $0.onClickReactivateFilters Function to reactivate filters.
+ * @param $0.onClickCloseWarning Function to close the warning.
+ */
 export const Warning = ({
-    nowEnabled,
-    wasEnabled,
+    actuallyEnabledFilterNames,
+    expectedEnabledFilterNames,
     onClickReactivateFilters,
     onClickCloseWarning,
 }: WarningProps) => {
@@ -62,7 +90,7 @@ export const Warning = ({
                         {translator.getMessage('options_rule_limits_warning_enabled_before_title')}
                     </div>
                     <div className="rules-limits__group rules-limits__text--gray">
-                        {wasEnabled.join(', ')}
+                        {expectedEnabledFilterNames}
                     </div>
                 </div>
                 <div className="rules-limits__section">
@@ -70,7 +98,7 @@ export const Warning = ({
                         {translator.getMessage('options_rule_limits_warning_enabled_now_title')}
                     </div>
                     <div className="rules-limits__group rules-limits__text--gray">
-                        {nowEnabled.join(', ')}
+                        {actuallyEnabledFilterNames}
                     </div>
                 </div>
                 <div className="rules-limits__section">
@@ -110,22 +138,20 @@ export const Warning = ({
                         </div>
                         <div className="rules-limits__group-option">
                             {reactTranslator.getMessage(
-                                nowEnabled.length > 0
+                                actuallyEnabledFilterNames.length > 0
                                     ? 'options_rule_limits_warning_actions_close_warning_multiple_filters'
                                     : 'options_rule_limits_warning_actions_close_warning_one_filter',
                                 {
-                                    a: (chunks: string) => {
-                                        return (
-                                            <a
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="rules-limits__group-option-link"
-                                                onClick={onClickCloseWarning}
-                                            >
-                                                {chunks}
-                                            </a>
-                                        );
-                                    },
+                                    a: (chunks: string) => (
+                                        <a
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="rules-limits__group-option-link"
+                                            onClick={onClickCloseWarning}
+                                        >
+                                            {chunks}
+                                        </a>
+                                    ),
                                 },
                             )}
                         </div>

@@ -35,21 +35,30 @@ export const RulesLimits = observer(() => {
     const { settingsStore } = useContext(rootStore);
 
     useEffect(() => {
-        settingsStore.setRulesLimits();
+        settingsStore.getRulesLimits();
     }, [settingsStore]);
 
     const rulesLimits = settingsStore.rulesLimits as IRulesLimits;
 
-    const showWarning = rulesLimits.previouslyEnabledFilters.length > 0;
+    const actuallyEnabledFilterNames = rulesLimits.actuallyEnabledFilters.map((filterId) => {
+        return settingsStore.filters.find(f => f.filterId === filterId)?.name;
+    });
+
+    const expectedEnabledFilterNames = rulesLimits.expectedEnabledFilters.map((filterId) => {
+        return settingsStore.filters.find(f => f.filterId === filterId)?.name;
+    });
+
+    const showWarning = rulesLimits.expectedEnabledFilters.length > 0;
 
     const onClickReactivateFilters = async () => {
         await messenger.sendMessage(MessageType.RestoreFilters);
     };
 
     const onClickCloseWarning = async () => {
-        // FIXME add loader
+        // FIXME enable loader
         await messenger.sendMessage(MessageType.ClearRulesLimitsWarning);
-        // FIXME update state
+        await settingsStore.getRulesLimits();
+        // FIXME disable loader
     };
 
     return (
@@ -75,8 +84,8 @@ export const RulesLimits = observer(() => {
         >
             {showWarning && (
                 <Warning
-                    nowEnabled={rulesLimits.nowEnabledFilters}
-                    wasEnabled={rulesLimits.previouslyEnabledFilters}
+                    actuallyEnabledFilterNames={actuallyEnabledFilterNames.join(', ')}
+                    expectedEnabledFilterNames={expectedEnabledFilterNames.join(', ')}
                     onClickReactivateFilters={onClickReactivateFilters}
                     onClickCloseWarning={onClickCloseWarning}
                 />

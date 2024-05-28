@@ -125,8 +125,8 @@ const DEFAULT_RULES_LIMITS = {
     staticRulesMaximumCount: 0,
     staticRulesRegexpsEnabledCount: 0,
     staticRulesRegexpsMaxCount: 0,
-    previouslyEnabledFilters: [],
-    nowEnabledFilters: [],
+    expectedEnabledFilters: [],
+    actuallyEnabledFilters: [],
 };
 
 class SettingsStore {
@@ -203,7 +203,7 @@ class SettingsStore {
     }
 
     @action
-    async setRulesLimits() {
+    async getRulesLimits() {
         const rulesLimits = await messenger.getRulesLimits();
 
         runInAction(() => {
