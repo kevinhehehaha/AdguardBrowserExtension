@@ -51,7 +51,10 @@ export const RulesLimits = observer(() => {
     const showWarning = rulesLimits.expectedEnabledFilters.length > 0;
 
     const onClickReactivateFilters = async () => {
+        // FIXME enable loader
         await messenger.sendMessage(MessageType.RestoreFilters);
+        await settingsStore.getRulesLimits();
+        // FIXME disable loader
     };
 
     const onClickCloseWarning = async () => {
