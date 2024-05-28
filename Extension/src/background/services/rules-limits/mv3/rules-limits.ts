@@ -33,7 +33,7 @@ import { FilterMetadata, FiltersApi } from '../../../api';
 import { CUSTOM_FILTERS_START_ID } from '../../../../common/constants';
 import { filterStateStorage } from '../../../storages';
 import { rulesLimitsStorage } from '../../../storages/rules-limits';
-import { rulesLimitsStorageDataValidator } from '../../../schema/rules-limits/rules-limits';
+import { rulesLimitsStorageDataValidator } from '../../../schema/rules-limits';
 import { logger } from '../../../../common/logger';
 
 const {
@@ -42,28 +42,84 @@ const {
     MAX_NUMBER_OF_ENABLED_STATIC_RULESETS,
 } = browser.declarativeNetRequest;
 
+/**
+ * RuleSetCounter interface.
+ */
 interface RuleSetCounter {
     filterId: number;
     rulesCount: number;
     regexpRulesCount: number;
 }
 
+/**
+ * Map of ruleset counters.
+ */
 interface RuleSetCountersMap {
     [key: number]: RuleSetCounter;
 }
 
+/**
+ * Interface for rules limits.
+ */
 export interface IRulesLimits {
+    /**
+     * How many user rules are enabled in the browser.
+     */
     userRulesEnabledCount: number;
+
+    /**
+     * Maximum count of the user rules, which can be enabled in the browser.
+     */
     userRulesMaximumCount: number;
+
+    /**
+     * How many user regexp rules are enabled in the browser.
+     */
     userRulesRegexpsEnabledCount: number;
+
+    /**
+     * Maximum count of the user regexp rules, which can be enabled in the browser.
+     */
     userRulesRegexpsMaximumCount: number;
+
+    /**
+     * How many static filters are enabled in the browser.
+     */
     staticFiltersEnabledCount: number;
+
+    /**
+     * Maximum count of the static filters, which can be enabled in the browser.
+     */
     staticFiltersMaximumCount: number;
+
+    /**
+     * How many static rules are enabled in the browser.
+     */
     staticRulesEnabledCount: number;
+
+    /**
+     * Maximum count of the static rules, which can be enabled in the browser.
+     */
     staticRulesMaximumCount: number;
+
+    /**
+     * How many static regexp rules are enabled in the browser.
+     */
     staticRulesRegexpsEnabledCount: number;
+
+    /**
+     * Maximum count of the static regexp rules, which can be enabled in the browser.
+     */
     staticRulesRegexpsMaxCount: number;
+
+    /**
+     * List of actually enabled filters ids.
+     */
     actuallyEnabledFilters: number[];
+
+    /**
+     * List of expected enabled filters ids.
+     */
     expectedEnabledFilters: number[];
 }
 
@@ -81,7 +137,7 @@ export class RulesLimitsService {
         messageHandler.addListener(MessageType.GetRulesLimits, this.onGetRulesLimits.bind(this));
         messageHandler.addListener(
             MessageType.ClearRulesLimitsWarning,
-            RulesLimitsService.cleanPreviouslyNeededToBeEnabledFilters,
+            RulesLimitsService.cleanExpectedEnabledFilters,
         );
     }
 
@@ -288,11 +344,11 @@ export class RulesLimitsService {
         const expectedEnabledFilters = FiltersApi.getEnabledFiltersWithMetadata()
             .filter(f => f.groupId <= CUSTOM_FILTERS_START_ID)
             .map((filter) => filter.filterId)
-            .sort((a: number, b: number) => a - b);
+            .sort((a, b) => a - b);
 
         const actuallyEnabledFilters = (await chrome.declarativeNetRequest.getEnabledRulesets())
             .map((s) => Number.parseInt(s.slice(RULE_SET_NAME_PREFIX.length), 10))
-            .sort((a: number, b: number) => a - b);
+            .sort((a, b) => a - b);
 
         const isStateBroken = !isEqual(expectedEnabledFilters, actuallyEnabledFilters);
 
@@ -318,9 +374,9 @@ export class RulesLimitsService {
     }
 
     /**
-     * Clean previously needed to be enabled filters.
+     * Clean filters that were expected to be enabled.
      */
-    static async cleanPreviouslyNeededToBeEnabledFilters(): Promise<void> {
+    static async cleanExpectedEnabledFilters(): Promise<void> {
         await rulesLimitsStorage.setData([]);
     }
 
@@ -349,7 +405,10 @@ export class RulesLimitsService {
         return data;
     }
 
-    public static getPreviouslyEnabledFilters = async (): Promise<number[]> => {
+    /**
+     * Returns previously enabled filters.
+     */
+    public static getExpectedEnabledFilters = async (): Promise<number[]> => {
         return rulesLimitsStorage.getData();
     };
 }
