@@ -3,12 +3,6 @@
     vertical-align: middle;
     flex-shrink: 0;
 
-    &--loading {
-        pointer-events: none;
-        animation: loader-spin 1.7s infinite linear;
-        animation-fill-mode: forwards;
-    }
-
     &--button {
         width: 24px;
         height: 24px;
@@ -30,8 +24,8 @@
     }
 
     &--logo {
-        width: 113px;
-        height: 25px;
+        width: 107px;
+        height: 24px;
         color: #232323;
 
         @media (prefers-color-scheme: dark) {
@@ -40,8 +34,16 @@
     }
 
     &--action {
-        width: 17px;
-        height: 17px;
+        width: 24px;
+        height: 24px;
+
+        &--info {
+            color: var(--gray7f);
+
+            @media (prefers-color-scheme: dark) {
+                color: var(--grayc0);
+            }
+        }
     }
 
     &--cross {
@@ -80,6 +82,12 @@
         &--logo {
             color: #232323;
         }
+
+        &--action {
+            &--info {
+                color: var(--gray7f);
+            }
+        }
     }
 }
 
@@ -88,14 +96,11 @@
         &--logo {
             color: var(--gray300);
         }
-    }
-}
 
-@keyframes loader-spin {
-    from {
-        -webkit-transform: rotate(0deg);
-    } 
-    to {
-        -webkit-transform: rotate(360deg);
+        &--action {
+            &--info {
+                color: var(--grayc0);
+            }
+        }
     }
 }

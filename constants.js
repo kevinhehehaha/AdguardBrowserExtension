@@ -34,6 +34,8 @@ export const CONTENT_SCRIPT_END_OUTPUT = 'pages/content-script-end';
 export const THANKYOU_OUTPUT = 'pages/thankyou';
 export const ASSISTANT_INJECT_OUTPUT = 'pages/assistant-inject';
 export const GPC_SCRIPT_OUTPUT = 'pages/gpc';
+export const DEVTOOLS_OUTPUT = 'pages/devtools';
+export const DEVTOOLS_ELEMENT_SIDEBAR_OUTPUT = 'pages/devtools-elements-sidebar';
 
 export const EDITOR_OUTPUT = 'shared/editor';
 

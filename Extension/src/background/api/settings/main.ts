@@ -64,7 +64,7 @@ import {
     DOCUMENT_BLOCK_OUTPUT,
     GPC_SCRIPT_OUTPUT,
 } from '../../../../../constants';
-// import { filteringLogApi } from '../filtering-log';
+import { filteringLogApi } from '../filtering-log';
 import { network } from '../network';
 
 import { SettingsMigrations } from './migrations';
@@ -152,10 +152,11 @@ export class SettingsApi {
             assistantUrl: `/${ASSISTANT_INJECT_OUTPUT}.js`,
             gpcScriptUrl: `/${GPC_SCRIPT_OUTPUT}.js`,
             documentBlockingPageUrl: `${Prefs.baseUrl}${DOCUMENT_BLOCK_OUTPUT}.html`,
-            // collectStats: !settingsStorage.get(SettingOption.DisableCollectHits) || filteringLogApi.isOpen(),
-            // debugScriptlets: filteringLogApi.isOpen(),
-            collectStats: !settingsStorage.get(SettingOption.DisableCollectHits) || false,
-            debugScriptlets: false,
+            collectStats: !__IS_MV3__
+                && (!settingsStorage.get(SettingOption.DisableCollectHits)
+                    || filteringLogApi.isOpen()
+                ),
+            debugScriptlets: !__IS_MV3__ && filteringLogApi.isOpen(),
             allowlistInverted: !settingsStorage.get(SettingOption.DefaultAllowlistMode),
             allowlistEnabled: settingsStorage.get(SettingOption.AllowlistEnabled),
             stealthModeEnabled: !settingsStorage.get(SettingOption.DisableStealthMode),
@@ -275,8 +276,10 @@ export class SettingsApi {
 
         settingsStorage.set(SettingOption.DisableShowPageStats, !showBlockedAdsCount);
         settingsStorage.set(SettingOption.DisableDetectFilters, !autodetectFilters);
-        settingsStorage.set(SettingOption.DisableSafebrowsing, !safebrowsingEnabled);
-        settingsStorage.set(SettingOption.FiltersUpdatePeriod, filtersUpdatePeriod);
+        if (!__IS_MV3__) {
+            settingsStorage.set(SettingOption.DisableSafebrowsing, !safebrowsingEnabled);
+            settingsStorage.set(SettingOption.FiltersUpdatePeriod, filtersUpdatePeriod);
+        }
 
         if (appearanceTheme) {
             settingsStorage.set(SettingOption.AppearanceTheme, appearanceTheme);

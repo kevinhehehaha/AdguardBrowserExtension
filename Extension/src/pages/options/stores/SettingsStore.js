@@ -27,8 +27,8 @@ import {
 import { logger } from '../../../common/logger';
 import {
     createSavingService,
-    EVENTS as SAVING_FSM_EVENTS,
-    STATES,
+    SavingFSMEvent,
+    SavingFSMState,
 } from '../../common/components/Editor/savingFSM';
 import { MIN_FILTERS_UPDATE_DISPLAY_DURATION_MS } from '../../common/constants';
 import { sleep } from '../../helpers';
@@ -45,7 +45,7 @@ import {
     AntiBannerFiltersId,
     AntibannerGroupsId,
     RECOMMENDED_TAG_ID,
-    TRUSTED_TAG,
+    TRUSTED_TAG_KEYWORD,
     WASTE_CHARACTERS,
 } from '../../../common/constants';
 
@@ -178,7 +178,7 @@ class SettingsStore {
         savingAllowlistService.onTransition((state) => {
             runInAction(() => {
                 this.savingAllowlistState = state.value;
-                if (state.value === STATES.SAVING) {
+                if (state.value === SavingFSMState.Saving) {
                     this.allowlistEditorContentChanged = false;
                 }
             });
@@ -213,7 +213,7 @@ class SettingsStore {
                  * TODO (v.zhelvis): Updating filters on background service response can cause filter enable state mismatch,
                  * because we toggle switches on frontend side first, but cannot determine when action
                  * in background service is completed and final result of user action.
-                 * It seems that we need to use a new approach with atomic updates instead of global state synchronisation
+                 * It seems that we need to use a new approach with atomic updates instead of global state synchronization
                  * to avoid this kind of problems. This task can be split into two parts:
                  * - Moving specific logic from the background to the settings page.
                  * - Integrate a transparent transaction model with simple collision resolution to prevent race conditions.
@@ -534,7 +534,10 @@ class SettingsStore {
          * Optimistically set the enabled property to true.
          * The verified state of the filter will be emitted after the engine update.
          */
-        this.setFilterEnabledState(filterId, enabled);
+        // do not update filter state for mv3 optimistically
+        if (!__IS_MV3__) {
+            this.setFilterEnabledState(filterId, enabled);
+        }
 
         try {
             const groupId = await messenger.updateFilterStatus(filterId, enabled);
@@ -555,6 +558,9 @@ class SettingsStore {
                     // if any filter in group is enabled, the group is considered as touched
                     group.touched = true;
                 }
+            }
+            if (__IS_MV3__) {
+                this.setFilterEnabledState(filterId, enabled);
             }
         } catch (e) {
             logger.error(e);
@@ -638,7 +644,7 @@ class SettingsStore {
 
     @action
     saveAllowlist = async (allowlist) => {
-        await savingAllowlistService.send(SAVING_FSM_EVENTS.SAVE, { value: allowlist });
+        await savingAllowlistService.send(SavingFSMEvent.Save, { value: allowlist });
     };
 
     @action
@@ -759,7 +765,7 @@ class SettingsStore {
 
                 // AG-10491
                 if (filter.trusted && filter.trusted === true) {
-                    const trustedTagMatching = `#${TRUSTED_TAG}`.match(searchQuery);
+                    const trustedTagMatching = `#${TRUSTED_TAG_KEYWORD}`.match(searchQuery);
                     if (trustedTagMatching) {
                         return true;
                     }

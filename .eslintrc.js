@@ -88,6 +88,18 @@ module.exports = {
                         'group': 'external',
                         'position': 'after',
                     },
+                    // Place engine alias after internal
+                    {
+                        'pattern': 'engine',
+                        'group': 'internal',
+                        'position': 'after',
+                    },
+                    // Place tswebextension alias after internal
+                    {
+                        'pattern': 'tswebextension',
+                        'group': 'internal',
+                        'position': 'after',
+                    },
                     // Separate group for all .pcss styles
                     {
                         'pattern': '*.pcss',

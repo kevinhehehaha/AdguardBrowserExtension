@@ -26,7 +26,6 @@ import {
     ForwardFrom,
     ForwardParams,
 } from '../../../common/forward';
-import { engine } from '../../engine';
 import { UrlUtils } from '../../utils/url';
 import { storage, settingsStorage } from '../../storages';
 import { SettingOption } from '../../schema';
@@ -40,6 +39,7 @@ import {
     FULLSCREEN_USER_RULES_OUTPUT,
     OPTIONS_OUTPUT,
 } from '../../../../../constants';
+import { FiltersApi } from '../filters';
 
 // TODO: We can manipulates tabs directly from content-script and other extension pages context.
 // So this API can be shared and used for data flow simplifying (direct calls instead of message passing)
@@ -198,12 +198,7 @@ export class PagesApi {
             browserName = 'Other';
         }
 
-        const filterIds = engine.api.configuration
-            ? [
-                ...engine.api.configuration.staticFiltersIds,
-                ...engine.api.configuration?.customFilters,
-            ]
-            : [];
+        const filterIds = FiltersApi.getEnabledFilters();
 
         const params: ForwardParams = {
             action: ForwardAction.IssueReport,
@@ -396,6 +391,10 @@ export class PagesApi {
      * @returns Browser security url params record.
      */
     private static getBrowserSecurityParams(): { [key: string]: string } {
+        if (__IS_MV3__) {
+            return {};
+        }
+
         const isEnabled = !settingsStorage.get(SettingOption.DisableSafebrowsing);
         return { 'browsing_security.enabled': String(isEnabled) };
     }

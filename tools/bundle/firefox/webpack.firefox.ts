@@ -24,13 +24,13 @@ import { merge } from 'webpack-merge';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { WebpackPluginInstance } from 'webpack';
 
-import { genCommonConfig } from '../webpack.common';
+import { genMv2CommonConfig } from '../webpack.common-mv2';
 import { updateManifestBuffer } from '../../helpers';
 import {
     Browser,
     BrowserConfig,
     BUILD_ENV,
-    Env,
+    BuildTargetEnv,
 } from '../../constants';
 import {
     BACKGROUND_OUTPUT,
@@ -42,15 +42,15 @@ import { BACKGROUND_PATH, htmlTemplatePluginCommonOptions } from '../common-cons
 import { firefoxManifest, firefoxManifestStandalone } from './manifest.firefox';
 
 export const genFirefoxConfig = (browserConfig: BrowserConfig, isWatchMode = false) => {
-    const commonConfig = genCommonConfig(browserConfig);
+    const commonConfig = genMv2CommonConfig(browserConfig);
 
     if (!commonConfig?.output?.path) {
         throw new Error('commonConfig.output.path is undefined');
     }
 
     let zipFilename = `${browserConfig.browser}.zip`;
-    if (BUILD_ENV === Env.Beta
-        || BUILD_ENV === Env.Release) {
+    if (BUILD_ENV === BuildTargetEnv.Beta
+        || BUILD_ENV === BuildTargetEnv.Release) {
         zipFilename = 'firefox.zip';
     }
 
@@ -109,15 +109,6 @@ export const genFirefoxConfig = (browserConfig: BrowserConfig, isWatchMode = fal
     }
 
     const firefoxConfig = {
-        entry: {
-            [BACKGROUND_OUTPUT]: {
-                import: BACKGROUND_PATH,
-                dependOn: [
-                    TSURLFILTER_VENDOR_OUTPUT,
-                    TSWEBEXTENSION_VENDOR_OUTPUT,
-                ],
-            },
-        },
         output: {
             path: path.join(commonConfig.output.path, browserConfig.buildDir),
         },

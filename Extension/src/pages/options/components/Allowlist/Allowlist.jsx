@@ -30,12 +30,14 @@ import { Editor } from '../../../common/components/Editor';
 import { rootStore } from '../../stores/RootStore';
 import { handleFileUpload } from '../../../helpers';
 import { logger } from '../../../../common/logger';
+import { SavingFSMState } from '../../../common/components/Editor/savingFSM';
+import { Loader } from '../../../common/components/Loader';
 import { reactTranslator } from '../../../../common/translators/reactTranslator';
 import { usePrevious } from '../../../common/hooks/usePrevious';
-import { Setting, SETTINGS_TYPES } from '../Settings/Setting';
 import { exportData, ExportTypes } from '../../../common/utils/export';
 
 import { AllowlistSavingButton } from './AllowlistSavingButton';
+import { AllowlistSwitcher } from './AllowlistSwitcher';
 
 const Allowlist = observer(() => {
     const { settingsStore, uiStore } = useContext(rootStore);
@@ -111,11 +113,6 @@ const Allowlist = observer(() => {
         },
     }];
 
-    const allowlistChangeHandler = async (e) => {
-        const { id, data } = e;
-        await settingsStore.updateSetting(id, data);
-    };
-
     const { AllowlistEnabled } = settings.names;
 
     let shouldResetSize = false;
@@ -124,8 +121,15 @@ const Allowlist = observer(() => {
         shouldResetSize = true;
     }
 
+    /**
+     * Show loader in mv3 when allowlist is being saved.
+     */
+    const isMv3Saving = __IS_MV3__
+        && settingsStore.savingAllowlistState === SavingFSMState.Saving;
+
     return (
         <>
+            <Loader condition={isMv3Saving} />
             <SettingsSection
                 title={reactTranslator.getMessage('options_allowlist')}
                 id={AllowlistEnabled}
@@ -148,14 +152,7 @@ const Allowlist = observer(() => {
                             </span>
                         </div>
                     )}
-                inlineControl={(
-                    <Setting
-                        id={AllowlistEnabled}
-                        type={SETTINGS_TYPES.CHECKBOX}
-                        value={settings.values[AllowlistEnabled]}
-                        handler={allowlistChangeHandler}
-                    />
-                )}
+                inlineControl={<AllowlistSwitcher />}
             />
             <Editor
                 name="allowlist"

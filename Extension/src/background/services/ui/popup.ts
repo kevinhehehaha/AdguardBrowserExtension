@@ -15,8 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
-import { tabsApi, isHttpOrWsRequest } from '@adguard/tswebextension/mv3';
-
+import { tabsApi as tsWebExtTabsApi, isHttpOrWsRequest } from '../../tswebextension';
 import {
     ChangeApplicationFilteringDisabledMessage,
     GetTabInfoForPopupMessage,
@@ -35,6 +34,7 @@ import {
     GetStatisticsDataResponse,
     SettingsData,
     PartialTabContext,
+    UserRulesApi,
 } from '../../api';
 
 export type GetTabInfoForPopupResponse = {
@@ -83,7 +83,7 @@ export class PopupService {
     ): Promise<GetTabInfoForPopupResponse | undefined> {
         const { tabId, tabUrl } = data;
 
-        let tabContext: PartialTabContext | undefined = tabsApi.getTabContext(tabId);
+        let tabContext: PartialTabContext | undefined = tsWebExtTabsApi.getTabContext(tabId);
 
         // FIXME: Tmp solution for internal tabs until AG-32609 is done.
         if (!isHttpOrWsRequest(tabUrl)) {
@@ -96,6 +96,11 @@ export class PopupService {
         }
 
         if (tabContext) {
+            // FIXME: fix for mv3 before releasing
+            let hasCustomRulesToReset = false;
+            if (!__IS_MV3__) {
+                hasCustomRulesToReset = await UserRulesApi.hasRulesForUrl(tabContext.info.url);
+            }
             return {
                 frameInfo: FramesApi.getMainFrameData(tabContext),
                 stats: PageStatsApi.getStatisticsData(),
@@ -108,8 +113,7 @@ export class PopupService {
                     isEdgeBrowser: UserAgent.isEdge || UserAgent.isEdgeChromium,
                     notification: await promoNotificationApi.getCurrentNotification(),
                     isDisableShowAdguardPromoInfo: settingsStorage.get(SettingOption.DisableShowAdguardPromoInfo),
-                    hasCustomRulesToReset: false,
-                    // hasCustomRulesToReset: await UserRulesApi.hasRulesForUrl(tabContext.info.url),
+                    hasCustomRulesToReset,
                 },
             };
         }
