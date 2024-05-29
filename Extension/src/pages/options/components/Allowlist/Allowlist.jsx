@@ -27,11 +27,10 @@ import { Link } from 'react-router-dom';
 
 import { SettingsSection } from '../Settings/SettingsSection';
 import { Editor } from '../../../common/components/Editor';
+import { handleWithMinLoaderDelay } from '../../../common/components/helpers';
 import { rootStore } from '../../stores/RootStore';
 import { handleFileUpload } from '../../../helpers';
 import { logger } from '../../../../common/logger';
-import { SavingFSMState } from '../../../common/components/Editor/savingFSM';
-import { Loader } from '../../../common/components/Loader';
 import { reactTranslator } from '../../../../common/translators/reactTranslator';
 import { usePrevious } from '../../../common/hooks/usePrevious';
 import { exportData, ExportTypes } from '../../../common/utils/export';
@@ -105,12 +104,18 @@ const Allowlist = observer(() => {
         settingsStore.setAllowlistEditorContentChangedState(true);
     };
 
+    const execOnSave = __IS_MV3__
+        ? () => handleWithMinLoaderDelay(
+            // Show loader in mv3 when allowlist is being saved.
+            (value) => uiStore.setShouldShowLoader(value),
+            saveClickHandler,
+        )
+        : saveClickHandler;
+
     const shortcuts = [{
         name: 'save',
         bindKey: { win: 'Ctrl-S', mac: 'Command-S' },
-        exec: async () => {
-            await saveClickHandler();
-        },
+        exec: execOnSave,
     }];
 
     const { AllowlistEnabled } = settings.names;
@@ -121,15 +126,8 @@ const Allowlist = observer(() => {
         shouldResetSize = true;
     }
 
-    /**
-     * Show loader in mv3 when allowlist is being saved.
-     */
-    const isMv3Saving = __IS_MV3__
-        && settingsStore.savingAllowlistState === SavingFSMState.Saving;
-
     return (
         <>
-            <Loader condition={isMv3Saving} />
             <SettingsSection
                 title={reactTranslator.getMessage('options_allowlist')}
                 id={AllowlistEnabled}

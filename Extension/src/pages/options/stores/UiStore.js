@@ -31,6 +31,11 @@ class UiStore {
 
     @observable notifications = [];
 
+    /**
+     * Loader visibility state.
+     */
+    @observable shouldShowLoader = false;
+
     @action
     addNotification({ title = '', description }) {
         const id = nanoid();
@@ -46,6 +51,16 @@ class UiStore {
     removeNotification(id) {
         this.notifications = this.notifications
             .filter((notification) => notification.id !== id);
+    }
+
+    /**
+     * Sets the loader visibility state.
+     *
+     * @param {boolean} value Loader visibility state. Default value is false.
+     */
+    @action
+    setShouldShowLoader(value = false) {
+        this.shouldShowLoader = value;
     }
 }
 

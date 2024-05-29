@@ -31,7 +31,6 @@ import { reactTranslator } from '../../../../common/translators/reactTranslator'
 import { translator } from '../../../../common/translators/translator';
 import { ConfirmModal } from '../../../common/components/ConfirmModal';
 import { COLLECT_HITS_LEARN_MORE_URL } from '../../constants';
-import { Loader } from '../../../common/components/Loader';
 
 export const Miscellaneous = observer(() => {
     const {
@@ -49,7 +48,6 @@ export const Miscellaneous = observer(() => {
 
     const [isOpenResetStatsModal, setIsOpenResetStatsModal] = useState(false);
     const [isOpenResetSettingsModal, setIsOpenResetSettingsModal] = useState(false);
-    const [showLoader, setShowLoader] = useState(false);
 
     const settingChangeHandler = async ({ id, data }) => {
         logger.info(`Setting ${id} set to ${data}`);
@@ -58,7 +56,7 @@ export const Miscellaneous = observer(() => {
 
     const handleInvertAllowlistChange = ({ id, data }) => {
         handleWithMinLoaderDelay(
-            setShowLoader,
+            (value) => uiStore.setShouldShowLoader(value),
             () => settingsStore.updateSetting(id, data),
         );
     };
@@ -106,7 +104,6 @@ export const Miscellaneous = observer(() => {
 
     return (
         <>
-            <Loader condition={showLoader} />
             <SettingsSection title={translator.getMessage('options_miscellaneous_settings')}>
                 <div className="settings__group">
                     {!__IS_MV3__ && (
