@@ -34,13 +34,15 @@ import {
     FILTERS_DEST,
 } from '../../constants';
 import { BACKGROUND_PATH } from '../common-constants';
-import { BACKGROUND_OUTPUT } from '../../../constants';
+import { BACKGROUND_OUTPUT, GPC_SCRIPT_OUTPUT } from '../../../constants';
 
 import { chromeMv3Manifest } from './manifest.chrome-mv3';
 
 import WebExtensionManifest = Manifest.WebExtensionManifest;
 
 export const RULESET_NAME_PREFIX = 'ruleset_';
+
+const GPC_SCRIPT_PATH = path.resolve(__dirname, '../../../Extension/pages/gpc');
 
 const addDeclarativeNetRequest = (manifest: Partial<WebExtensionManifest>) => {
     const filtersDir = FILTERS_DEST.replace('%browser', 'chromium');
@@ -89,6 +91,10 @@ export const genChromeMv3Config = (browserConfig: BrowserConfig, isWatchMode = f
         entry: {
             [BACKGROUND_OUTPUT]: {
                 import: BACKGROUND_PATH,
+                runtime: false,
+            },
+            [GPC_SCRIPT_OUTPUT]: {
+                import: GPC_SCRIPT_PATH,
                 runtime: false,
             },
             'pages/devtools': path.join(DEVTOOLS_PATH, 'devtools.js'),

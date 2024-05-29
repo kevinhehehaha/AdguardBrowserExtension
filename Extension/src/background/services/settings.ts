@@ -248,16 +248,12 @@ export class SettingsService {
      *
      * @param isHideReferrerEnabled Changed {@link SettingOption.HideReferrer} setting value.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    static onHideReferrerStateChange(isHideReferrerEnabled: boolean): void {
-        // FIXME: It can be implemented.
-        // eslint-disable-next-line no-console
-        console.error('Not implemented!');
-        // try {
-        //     engine.api.setHideReferrer(isHideReferrerEnabled);
-        // } catch (e) {
-        //     logger.error('Failed to change `hide referrer` option state', e);
-        // }
+    static async onHideReferrerStateChange(isHideReferrerEnabled: boolean): Promise<void> {
+        try {
+            await engine.api.setHideReferrer(isHideReferrerEnabled);
+        } catch (e) {
+            logger.error('Failed to change `hide referrer` option state', e);
+        }
     }
 
     /**
@@ -265,16 +261,12 @@ export class SettingsService {
      *
      * @param isHideSearchQueriesEnabled Changed {@link SettingOption.HideSearchQueries} setting value.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    static onHideSearchQueriesStateChange(isHideSearchQueriesEnabled: boolean): void {
-        // FIXME: It can be implemented.
-        // eslint-disable-next-line no-console
-        console.error('Not implemented!');
-        // try {
-        //     engine.api.setHideSearchQueries(isHideSearchQueriesEnabled);
-        // } catch (e) {
-        //     logger.error('Failed to change `hide search queries` option state', e);
-        // }
+    static async onHideSearchQueriesStateChange(isHideSearchQueriesEnabled: boolean): Promise<void> {
+        try {
+            await engine.api.setHideSearchQueries(isHideSearchQueriesEnabled);
+        } catch (e) {
+            logger.error('Failed to change `hide search queries` option state', e);
+        }
     }
 
     /**
@@ -282,16 +274,12 @@ export class SettingsService {
      *
      * @param isSendDoNotTrackEnabled Changed {@link SettingOption.RemoveXClientData} setting value.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    static onSendDoNotTrackStateChange(isSendDoNotTrackEnabled: boolean): void {
-        // FIXME: It can be implemented.
-        // eslint-disable-next-line no-console
-        console.error('Not implemented!');
-        // try {
-        //     engine.api.setSendDoNotTrack(isSendDoNotTrackEnabled);
-        // } catch (e) {
-        //     logger.error('Failed to change `send do not track` option state', e);
-        // }
+    static async onSendDoNotTrackStateChange(isSendDoNotTrackEnabled: boolean): Promise<void> {
+        try {
+            await engine.api.setSendDoNotTrack(isSendDoNotTrackEnabled);
+        } catch (e) {
+            logger.error('Failed to change `send do not track` option state', e);
+        }
     }
 
     /**
@@ -299,16 +287,12 @@ export class SettingsService {
      *
      * @param isRemoveXClientDataEnabled Changed {@link SettingOption.RemoveXClientData} setting value.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    static onRemoveXClientDataStateChange(isRemoveXClientDataEnabled: boolean): void {
-        // FIXME: It can be implemented.
-        // eslint-disable-next-line no-console
-        console.error('Not implemented!');
-        // try {
-        //     engine.api.setBlockChromeClientData(isRemoveXClientDataEnabled);
-        // } catch (e) {
-        //     logger.error('Failed to change `remove x-client-data` option state', e);
-        // }
+    static async onRemoveXClientDataStateChange(isRemoveXClientDataEnabled: boolean): Promise<void> {
+        try {
+            await engine.api.setBlockChromeClientData(isRemoveXClientDataEnabled);
+        } catch (e) {
+            logger.error('Failed to change `remove x-client-data` option state', e);
+        }
     }
 
     /**
@@ -316,16 +300,12 @@ export class SettingsService {
      *
      * @param isBlockWebRTCEnabled Changed {@link SettingOption.BlockWebRTC} setting value.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static async onBlockWebRTCStateChange(isBlockWebRTCEnabled: boolean): Promise<void> {
-        // FIXME: It can be implemented.
-        // eslint-disable-next-line no-console
-        console.error('Not implemented!');
-        // try {
-        //     await engine.api.setBlockWebRTC(isBlockWebRTCEnabled);
-        // } catch (e) {
-        //     logger.error('Failed to change `block WebRTC` option state', e);
-        // }
+        try {
+            await engine.api.setBlockWebRTC(isBlockWebRTCEnabled);
+        } catch (e) {
+            logger.error('Failed to change `block WebRTC` option state', e);
+        }
     }
 
     // FIXME: Possibly can be implemented when https://github.com/w3c/webextensions/issues/439 will be implemented.

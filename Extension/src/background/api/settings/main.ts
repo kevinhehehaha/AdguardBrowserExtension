@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
-import type { SettingsConfig } from '@adguard/tswebextension';
+import type { SettingsConfig } from '@adguard/tswebextension/mv3';
 
 import { logger } from '../../../common/logger';
 import { defaultSettings } from '../../../common/settings';
@@ -59,7 +59,11 @@ import { settingsEvents } from '../../events';
 import { listeners } from '../../notifier';
 import { Unknown } from '../../../common/unknown';
 import { Prefs } from '../../prefs';
-import { ASSISTANT_INJECT_OUTPUT, DOCUMENT_BLOCK_OUTPUT } from '../../../../../constants';
+import {
+    ASSISTANT_INJECT_OUTPUT,
+    DOCUMENT_BLOCK_OUTPUT,
+    GPC_SCRIPT_OUTPUT,
+} from '../../../../../constants';
 // import { filteringLogApi } from '../filtering-log';
 import { network } from '../network';
 
@@ -146,6 +150,7 @@ export class SettingsApi {
     public static getTsWebExtConfiguration(): SettingsConfig {
         return {
             assistantUrl: `/${ASSISTANT_INJECT_OUTPUT}.js`,
+            gpcScriptUrl: `/${GPC_SCRIPT_OUTPUT}.js`,
             documentBlockingPageUrl: `${Prefs.baseUrl}${DOCUMENT_BLOCK_OUTPUT}.html`,
             // collectStats: !settingsStorage.get(SettingOption.DisableCollectHits) || filteringLogApi.isOpen(),
             // debugScriptlets: filteringLogApi.isOpen(),
